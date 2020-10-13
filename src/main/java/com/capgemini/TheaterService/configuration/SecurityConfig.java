@@ -1,10 +1,12 @@
 package com.capgemini.TheaterService.configuration;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.csrf.CsrfFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -19,18 +21,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
 //                .httpBasic();
 
-//        http.authorizeRequests()
-//                .antMatchers(HttpMethod.POST, "/theaters/**").hasRole("ADMIN")
-//                .antMatchers(HttpMethod.PUT, "/theaters/**").hasRole("ADMIN")
-//                .antMatchers(HttpMethod.DELETE, "/theaters/**").hasRole("ADMIN")
-//                .antMatchers("/theaters/**").hasAnyRole("ADMIN", "USER")
-//                .anyRequest().permitAll()
-//                .and()
-//                .httpBasic();
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/v1/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/v1/**").hasRole("ADMIN")
+                .antMatchers("/v1/**").hasAnyRole("ADMIN", "USER")
+                .anyRequest().permitAll()
+                .and()
+                .csrf().disable()
+                .httpBasic();
 
-          http.csrf().disable()
-                  .authorizeRequests()
-                  .anyRequest().permitAll();
+//        http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
+
+//          http.csrf().disable()
+//                  .authorizeRequests()
+//                  .anyRequest().permitAll();
     }
 
     @Override

@@ -2,21 +2,15 @@ package com.capgemini.TheaterService.controllers;
 
 import java.util.List;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
-import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.entities.Theater;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.capgemini.TheaterService.services.TheaterService;
 
-import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 

@@ -12,6 +12,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 
 @DynamoDBTable(tableName = "Theater")
 public class Theater {
@@ -98,5 +99,22 @@ public class Theater {
 
 	public void setRating(Double rating) {
 		this.rating = rating;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Theater theater = (Theater) o;
+		return Objects.equals(theaterId, theater.theaterId) &&
+				Objects.equals(cityId, theater.cityId) &&
+				Objects.equals(theaterName, theater.theaterName) &&
+				Objects.equals(address, theater.address) &&
+				Objects.equals(rating, theater.rating);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(theaterId, cityId, theaterName, address, rating);
 	}
 }

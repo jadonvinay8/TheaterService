@@ -55,9 +55,14 @@ public class GlobalExceptionHandler {
 				"400",  e.getMessage()), HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(TheaterNameValidationFailedException.class)
+	public ResponseEntity<ErrorResponse> invalidName(TheaterNameValidationFailedException e) {
+		return new ResponseEntity<>(new ErrorResponse("Theater name already present in the area",
+				"400",  e.getMessage()), HttpStatus.BAD_REQUEST);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> anyUnhandledException(Exception e) {
-		System.out.println(e);
 		return new ResponseEntity<>(new ErrorResponse("Some unknown error occurred",
 				"500",  e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
 	}

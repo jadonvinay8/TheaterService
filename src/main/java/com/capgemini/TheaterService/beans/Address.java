@@ -4,6 +4,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @DynamoDBDocument
 public class Address {
@@ -15,7 +16,7 @@ public class Address {
 	@NotNull
 	@NotBlank
 	private	String state;
-	private	String addressLine1;
+	private	String area;
 
 	@NotNull
 	@NotBlank
@@ -25,12 +26,12 @@ public class Address {
 		// Default Constructor
 	}
 
-	public Address(String city, String state, String addressLine1, String pincode) {
+	public Address(String city, String state, String area, String pinCode) {
 		super();
 		this.city = city;
 		this.state = state;
-		this.addressLine1 = addressLine1;
-		this.pincode = pincode;
+		this.area = area;
+		this.pincode = pinCode;
 	}
 
 	public String getCity() {
@@ -49,12 +50,12 @@ public class Address {
 		this.state = state;
 	}
 
-	public String getAddressLine1() {
-		return addressLine1;
+	public String getArea() {
+		return area;
 	}
 
-	public void setAddressLine1(String addressLine1) {
-		this.addressLine1 = addressLine1;
+	public void setArea(String area) {
+		this.area = area;
 	}
 
 	public String getPincode() {
@@ -64,7 +65,21 @@ public class Address {
 	public void setPincode(String pincode) {
 		this.pincode = pincode;
 	}
-	
-	
-	
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Address address = (Address) o;
+		return Objects.equals(city, address.city) &&
+				Objects.equals(state, address.state) &&
+				Objects.equals(area, address.area) &&
+				Objects.equals(pincode, address.pincode);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(city, state, area, pincode);
+	}
+
 }
