@@ -1,4 +1,4 @@
 FROM openjdk:11
-ADD target/AdminAPI-0.0.1-SNAPSHOT.jar admin-api.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "admin-api.jar"]
+ADD target/TheaterAPI-0.0.1-SNAPSHOT.jar theater-api.jar
+EXPOSE 8081
+ENTRYPOINT ["java", "-jar", "theater-api.jar"]

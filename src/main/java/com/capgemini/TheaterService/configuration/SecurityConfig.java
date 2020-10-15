@@ -1,11 +1,14 @@
 package com.capgemini.TheaterService.configuration;
 
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 
 @Configuration
@@ -21,14 +24,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
 //                .httpBasic();
 
-        http.authorizeRequests()
+        http.csrf().disable()
+                .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.PUT, "/v1/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/v1/**").hasRole("ADMIN")
                 .antMatchers("/v1/**").hasAnyRole("ADMIN", "USER")
                 .anyRequest().permitAll()
                 .and()
-                .csrf().disable()
                 .httpBasic();
 
 //        http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);

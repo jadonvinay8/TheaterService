@@ -102,7 +102,8 @@ public class TheaterService {
                 .filter(theater -> name.equals(theater.getTheaterName()))
                 .filter(theater -> area.equals(theater.getAddress().getArea()))
                 .forEach(theater -> {
-                    throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName() + " is already present in same area");
+                    throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName()
+                            + " is already present in same area");
                 });
     }
 
@@ -121,7 +122,8 @@ public class TheaterService {
                 .filter(theater -> cityIds.contains(theater.getCityId()))
                 .filter(theater -> areas.contains(theater.getAddress().getArea()))
                 .forEach(theater -> {
-                    throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName() + " is already present in same area");
+                    throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName()
+                            + " is already present in same area");
                 });
     }
 
@@ -224,6 +226,13 @@ public class TheaterService {
                     .findFirst();
         });
         return theaters;
+    }
+
+    public Boolean validateTheaterAndMovie(String theaterId, String movieId) {
+        var theater = findTheaterById(theaterId);
+        return theater.getMovies()
+                .stream()
+                .anyMatch(movie -> movie.getId().equals(movieId));
     }
 
     public void removeTheatersFromCity(String cityId) {

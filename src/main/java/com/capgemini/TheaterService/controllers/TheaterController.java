@@ -57,6 +57,13 @@ public class TheaterController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("{id}/{movieId}")
+    public ResponseEntity<Boolean> validateTheaterAndMovie(@PathVariable("id") String theaterId,
+                                                                   @PathVariable("movieId") String movieId) {
+
+        return new ResponseEntity<>(theaterService.validateTheaterAndMovie(theaterId, movieId), HttpStatus.OK);
+    }
+
     @GetMapping("{id}/movies")
     public ResponseEntity<List<ShortMovie>> getMoviesInATheater(@PathVariable("id") String id) {
         return new ResponseEntity<>(theaterService.getMovies(id), HttpStatus.OK);
