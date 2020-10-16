@@ -1,0 +1,26 @@
+[
+  {
+    "cityId": "b604ea8e-d298-4b6c-b2ea-9bbd7f59fac1",
+    "theaterName": "Suncity Cinemas",
+    "address": {
+      "city": "Shimla",
+      "state": "Himachal Pradesh",
+      "area": "Mall Road",
+      "pincode": "201006"
+    },
+    "rating": 4.7,
+    "movies": []
+  },
+  {
+    "cityId": "872d3baf-e718-4af0-aad2-080501299248",
+    "theaterName": "PVR Cinemas",
+    "address": {
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "area": "Near CST Railway Station",
+      "pincode": "201006"
+    },
+    "rating": 4.7,
+    "movies": []
+  }
+]

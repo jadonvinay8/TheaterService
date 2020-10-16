@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(InvalidOperationException.class)
 	public ResponseEntity<ErrorResponse> invalidOperation(InvalidOperationException e) {
-		return new ResponseEntity<>(new ErrorResponse(e.getMessage(), "400", e.getMessage()),
+		return new ResponseEntity<>(new ErrorResponse("Invalid Operation", "400", e.getMessage()),
 				HttpStatus.BAD_REQUEST);
 	}
 
@@ -59,6 +59,12 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> invalidName(TheaterNameValidationFailedException e) {
 		return new ResponseEntity<>(new ErrorResponse("Theater name already present in the area",
 				"400",  e.getMessage()), HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(OperationFailedException.class)
+	public ResponseEntity<ErrorResponse> operationFailed(OperationFailedException e) {
+		return new ResponseEntity<>(new ErrorResponse("Something went wrong in companion service",
+				e.getMessage(), "500"), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@ExceptionHandler(Exception.class)
