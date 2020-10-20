@@ -59,7 +59,7 @@ public class TheaterController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping
+    @PutMapping
     public ResponseEntity<Void> removeTheseMoviesFromTheseTheaters(@RequestBody Map<String, Set<String>> map) {
         theaterService.removeTheseMoviesFromTheseTheaters(map);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
