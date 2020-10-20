@@ -1,6 +1,8 @@
 package com.capgemini.TheaterService.controllers;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.entities.Theater;
@@ -57,9 +59,15 @@ public class TheaterController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @DeleteMapping
+    public ResponseEntity<Void> removeTheseMoviesFromTheseTheaters(@RequestBody Map<String, Set<String>> map) {
+        theaterService.removeTheseMoviesFromTheseTheaters(map);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @GetMapping("{id}/{movieId}")
     public ResponseEntity<Boolean> validateTheaterAndMovie(@PathVariable("id") String theaterId,
-                                                                   @PathVariable("movieId") String movieId) {
+                                                           @PathVariable("movieId") String movieId) {
 
         return new ResponseEntity<>(theaterService.validateTheaterAndMovie(theaterId, movieId), HttpStatus.OK);
     }
@@ -71,7 +79,7 @@ public class TheaterController {
 
     @PostMapping("/{id}/movies/{movieId}")
     public ResponseEntity<Theater> addMovieToTheater(@PathVariable("id") @NotNull String id,
-                                                      @PathVariable("movieId") @NotNull String movieId) {
+                                                     @PathVariable("movieId") @NotNull String movieId) {
 
         return new ResponseEntity<>(theaterService.addMovieInTheater(id, movieId), HttpStatus.CREATED);
     }

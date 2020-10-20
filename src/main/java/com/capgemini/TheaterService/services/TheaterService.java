@@ -93,7 +93,6 @@ public class TheaterService {
         validateTheaterNamingConstraints(theater); // check for naming constraint
 
         this.needToReFetch = true;
-
         return theaterDAO.save(theater);
     }
 
@@ -138,7 +137,6 @@ public class TheaterService {
         var theaterList = List.of(theater);
 
         removeUnderlyingScreens(theaterIdList, theaterList);
-        // theaterDAO.delete(theater);
     }
 
     public Theater updateTheater(String id, Theater theater) {
@@ -174,7 +172,6 @@ public class TheaterService {
         theater.setMovies(movies);
 
         this.needToReFetch = true;
-
         return updateTheater(theaterId, theater);
     }
 
@@ -184,8 +181,7 @@ public class TheaterService {
                 .stream()
                 .anyMatch(shortMovie -> shortMovie.getId().equals(movieId));
 
-        if (!isMoviePresent)
-            throw new InvalidOperationException("The movie does not exist in this theater");
+        if (!isMoviePresent) throw new InvalidOperationException("The movie does not exist in this theater");
 
         var requestUrl = removeMovieFromScreenUrl.replaceAll("theaterId", theaterId)
                 .replaceAll("movieId", movieId);
@@ -200,8 +196,23 @@ public class TheaterService {
         theater.setMovies(movies);
 
         this.needToReFetch = true;
-
         updateTheater(theaterId, theater);
+    }
+
+    public void removeTheseMoviesFromTheseTheaters(Map<String, Set<String>> map) {
+        List<Theater> theatersToBeUpdated = new ArrayList<>();
+        map.forEach((theaterId, movieIds) -> {
+            var theater = findTheaterById(theaterId);
+            List<ShortMovie> movies = theater
+                    .getMovies()
+                    .stream()
+                    .filter(Predicate.not(movie -> movieIds.contains(movie.getId())))
+                    .collect(Collectors.toList());
+            theater.setMovies(movies);
+            theatersToBeUpdated.add(theater);
+        });
+
+        theaterDAO.saveAll(theatersToBeUpdated);
     }
 
     private Movie retrieveMovie(String movieId) {
@@ -260,8 +271,6 @@ public class TheaterService {
                 .collect(Collectors.toList());
 
         removeUnderlyingScreens(theaterIds, theaters);
-
-//        theaterDAO.deleteAll(theaters);
     }
 
     public void addMultipleTheaters(List<Theater> theaters) {
@@ -279,7 +288,6 @@ public class TheaterService {
         callExternalService(ids, batchExistenceUrl, HttpMethod.POST, Boolean.class); // throws exception if any Id is invalid
 
         this.needToReFetch = true;
-
         theaterDAO.saveAll(theaters); // save if everything is fine
     }
 
@@ -311,7 +319,6 @@ public class TheaterService {
         validateTheaterNamingConstraints(filteredTheaters); // check for naming constraint
 
         this.needToReFetch = true;
-
         theaterDAO.saveAll(filteredTheaters);
     }
 
@@ -330,13 +337,8 @@ public class TheaterService {
         var requestBody = stringify(theaterIds);
         callExternalService(requestBody, removeScreensUrl, HttpMethod.DELETE, Boolean.class);
 
-//        if ((Boolean) response.getBody()) {
         this.needToReFetch = true;
         theaterDAO.deleteAll(theaters);
-//        }
-//        else {
-//            throw new OperationFailedException("Could not remove underlying screens, hence terminating operation");
-//        }
     }
 
     private ResponseEntity<?> callExternalService(String requestBody, String url, HttpMethod method, Class<?> claas) {
@@ -352,6 +354,5 @@ public class TheaterService {
             throw new CityNotFoundException("No object was found with that id");
         }
     }
-
 
 }
