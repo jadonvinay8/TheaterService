@@ -15,13 +15,19 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(CityNotFoundException.class)
 	public ResponseEntity<ErrorResponse> cityNotFound(CityNotFoundException e) {
-		return new ResponseEntity<>(new ErrorResponse("No Entity was found with given id", "404",
+		return new ResponseEntity<>(new ErrorResponse("No City was found with given id", "404",
 				e.getMessage()), HttpStatus.NOT_FOUND);
 	}
 	
 	@ExceptionHandler(TheaterNotFoundException.class)
 	public ResponseEntity<ErrorResponse> theaterNotFound(TheaterNotFoundException e) {
 		return new ResponseEntity<>(new ErrorResponse("No theater was found with given id",
+				"404", e.getMessage()), HttpStatus.NOT_FOUND);
+	}
+
+	@ExceptionHandler(EntityNotFoundException.class)
+	public ResponseEntity<ErrorResponse> entityNotFound(EntityNotFoundException e) {
+		return new ResponseEntity<>(new ErrorResponse("No entity was found with given id, try changing the id(s)",
 				"404", e.getMessage()), HttpStatus.NOT_FOUND);
 	}
 

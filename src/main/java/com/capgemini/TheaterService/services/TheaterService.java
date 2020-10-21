@@ -5,14 +5,12 @@ import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.dao.TheaterDAO;
 import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
-import com.capgemini.TheaterService.exceptions.CityNotFoundException;
-import com.capgemini.TheaterService.exceptions.InvalidOperationException;
-import com.capgemini.TheaterService.exceptions.TheaterNameValidationFailedException;
-import com.capgemini.TheaterService.exceptions.TheaterNotFoundException;
+import com.capgemini.TheaterService.exceptions.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,8 +19,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -61,6 +61,9 @@ public class TheaterService {
 
     @Value("${service.screen.delete}")
     private String removeScreensUrl;
+
+    @Value("${service.movie.bulk}")
+    private String getMoviesByIdsUrl;
 
     @Autowired
     public TheaterService(TheaterDAO theaterDAO, RestTemplate restTemplate) {
@@ -242,6 +245,18 @@ public class TheaterService {
                 .collect(Collectors.toSet());
     }
 
+    public Set<Movie> getFullMoviesInCity(String cityId) {
+        Set<String> movieIds = getTheatersInCity(cityId)
+                .stream()
+                .flatMap(theater -> theater.getMovies().stream())
+                .map(shortMovie -> shortMovie.getId())
+                .collect(Collectors.toSet());
+
+        var requestBody = stringify(movieIds);
+        ResponseEntity<?> response = callExternalService(requestBody, getMoviesByIdsUrl, HttpMethod.POST, Iterable.class);
+        return (Set<Movie>) response.getBody();
+    }
+
     public List<Theater> getTheatersRunningThisMovie(String cityId, String movieId) {
         List<Theater> theaters = new ArrayList<>();
 
@@ -291,9 +306,9 @@ public class TheaterService {
         theaterDAO.saveAll(theaters); // save if everything is fine
     }
 
-    private String stringify(List<String> cityIds) {
+    private String stringify(Iterable<String> ids) {
         try {
-            return new ObjectMapper().writeValueAsString(cityIds);
+            return new ObjectMapper().writeValueAsString(ids);
         } catch (JsonProcessingException e) {
             throw new InvalidOperationException("Can't process JSON");
         }
@@ -351,7 +366,9 @@ public class TheaterService {
                     ? restTemplate.getForEntity(url, claas)
                     : restTemplate.exchange(url, method, entity, claas);
         } catch (HttpClientErrorException e) {
-            throw new CityNotFoundException("No object was found with that id");
+            throw new EntityNotFoundException("No entity was found with that id");
+        } catch (HttpServerErrorException e) {
+            throw new OperationFailedException("Something went wrong in other API");
         }
     }
 

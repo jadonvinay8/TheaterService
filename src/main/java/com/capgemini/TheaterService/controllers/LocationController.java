@@ -1,6 +1,7 @@
 package com.capgemini.TheaterService.controllers;
 
 import com.capgemini.TheaterService.beans.ShortMovie;
+import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.services.TheaterService;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,11 @@ public class LocationController {
     @GetMapping("{id}/movies")
     public ResponseEntity<Set<ShortMovie>> getMoviesInCity(@PathVariable("id") String cityId) {
         return new ResponseEntity<>(theaterService.getMoviesInCity(cityId), HttpStatus.OK);
+    }
+
+    @GetMapping("{id}/movies/details")
+    public ResponseEntity<Set<Movie>> getFullMoviesInCity(@PathVariable("id") String cityId) {
+        return new ResponseEntity<>(theaterService.getFullMoviesInCity(cityId), HttpStatus.OK);
     }
 
     @PostMapping("{id}/theaters")
