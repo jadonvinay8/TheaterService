@@ -245,16 +245,17 @@ public class TheaterService {
                 .collect(Collectors.toSet());
     }
 
-    public Set<Movie> getFullMoviesInCity(String cityId) {
+    public List<Movie> getFullMoviesInCity(String cityId) {
         Set<String> movieIds = getTheatersInCity(cityId)
                 .stream()
                 .flatMap(theater -> theater.getMovies().stream())
-                .map(shortMovie -> shortMovie.getId())
+                .map(ShortMovie::getId)
                 .collect(Collectors.toSet());
 
         var requestBody = stringify(movieIds);
-        ResponseEntity<?> response = callExternalService(requestBody, getMoviesByIdsUrl, HttpMethod.POST, Iterable.class);
-        return (Set<Movie>) response.getBody();
+        ResponseEntity<Movie[]> response = (ResponseEntity<Movie[]>) callExternalService(requestBody,
+                getMoviesByIdsUrl, HttpMethod.POST, Movie[].class);
+        return Arrays.asList(response.getBody());
     }
 
     public List<Theater> getTheatersRunningThisMovie(String cityId, String movieId) {
@@ -280,6 +281,8 @@ public class TheaterService {
     public void removeTheatersFromCity(String cityId) {
         validateCity(cityId); // if city not valid, throw city not found exception
         var theaters = theaterDAO.findByCityId(cityId);
+        if (theaters.isEmpty())
+            return;
 
         List<String> theaterIds = theaters.stream()
                 .map(Theater::getTheaterId)

@@ -35,7 +35,7 @@ public class LocationController {
     }
 
     @GetMapping("{id}/movies/details")
-    public ResponseEntity<Set<Movie>> getFullMoviesInCity(@PathVariable("id") String cityId) {
+    public ResponseEntity<List<Movie>> getFullMoviesInCity(@PathVariable("id") String cityId) {
         return new ResponseEntity<>(theaterService.getFullMoviesInCity(cityId), HttpStatus.OK);
     }
 
