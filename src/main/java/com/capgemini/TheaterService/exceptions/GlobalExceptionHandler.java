@@ -4,9 +4,11 @@ import com.capgemini.TheaterService.beans.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.validation.ConstraintViolationException;
 
@@ -36,6 +38,18 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(new ErrorResponse("Invalid Operation", "400", e.getMessage()),
 				HttpStatus.BAD_REQUEST);
 	}
+
+//	@ExceptionHandler(AuthenticationException.class)
+//	public ResponseEntity<ErrorResponse> unauthorized(AuthenticationException e) {
+//		return new ResponseEntity<>(new ErrorResponse("Enter correct credentials to authenticate",
+//				"401", e.getMessage()), HttpStatus.UNAUTHORIZED);
+//	}
+//
+//	@ExceptionHandler(HttpClientErrorException.Forbidden.class)
+//	public ResponseEntity<ErrorResponse> forbidden(HttpClientErrorException.Forbidden e) {
+//		return new ResponseEntity<>(new ErrorResponse("You don't have permission to access this resource",
+//				"403", e.getMessage()), HttpStatus.FORBIDDEN);
+//	}
 
 	@ExceptionHandler(NullPointerException.class)
 	public ResponseEntity<ErrorResponse> nullPointer(NullPointerException e) {
