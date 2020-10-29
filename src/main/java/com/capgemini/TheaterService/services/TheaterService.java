@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,7 +21,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -39,10 +37,6 @@ public class TheaterService {
 
     private final TheaterDAO theaterDAO;
     private final RestTemplate restTemplate;
-
-    private Map<String, List<Theater>> getTheatersByCityId;
-    private List<Theater> allTheaters;
-    private boolean needToReFetch;
 
     @Value("${service.location.single}")
     private String singleExistenceUrl;
@@ -69,9 +63,6 @@ public class TheaterService {
     public TheaterService(TheaterDAO theaterDAO, RestTemplate restTemplate) {
         this.theaterDAO = theaterDAO;
         this.restTemplate = restTemplate;
-        this.getTheatersByCityId = new HashMap<>();
-        this.allTheaters = new ArrayList<>();
-        this.needToReFetch = false;
     }
 
     public Theater findTheaterById(String id) {
@@ -83,19 +74,14 @@ public class TheaterService {
     }
 
     public List<Theater> getAllTheaters() {
-        if (this.needToReFetch || this.allTheaters.isEmpty())
-            this.allTheaters = StreamSupport
-                .stream(theaterDAO.findAll().spliterator(), false)
-                .collect(Collectors.toList());
-
-        return this.allTheaters;
+        return StreamSupport
+            .stream(theaterDAO.findAll().spliterator(), false)
+            .collect(Collectors.toList());
     }
 
     public Theater addTheater(Theater theater) {
         validateCity(theater.getCityId()); // if city not valid, throw city not found exception
         validateTheaterNamingConstraints(theater); // check for naming constraint
-
-        this.needToReFetch = true;
         return theaterDAO.save(theater);
     }
 
@@ -149,7 +135,6 @@ public class TheaterService {
         // validateTheaterNamingConstraints(theater); // check for naming constraint
 
         if (retrievedTheater.getCityId().equals(theater.getCityId())) {
-            this.needToReFetch = true;
             return theaterDAO.save(theater);
         } else {
             throw new InvalidOperationException("can't change city id");
@@ -174,7 +159,6 @@ public class TheaterService {
         movies.add(new ShortMovie(movieId, movie.getName()));
         theater.setMovies(movies);
 
-        this.needToReFetch = true;
         return updateTheater(theaterId, theater);
     }
 
@@ -197,8 +181,6 @@ public class TheaterService {
                 .collect(Collectors.toList());
 
         theater.setMovies(movies);
-
-        this.needToReFetch = true;
         updateTheater(theaterId, theater);
     }
 
@@ -232,10 +214,7 @@ public class TheaterService {
 
     public List<Theater> getTheatersInCity(String cityId) {
         validateCity(cityId); // if city not valid, throw city not found exception
-        if (this.needToReFetch || !this.getTheatersByCityId.containsKey(cityId))
-             this.getTheatersByCityId.put(cityId, theaterDAO.findByCityId(cityId));
-
-        return this.getTheatersByCityId.get(cityId);
+        return theaterDAO.findByCityId(cityId);
     }
 
     public Set<ShortMovie> getMoviesInCity(String cityId) {
@@ -305,7 +284,6 @@ public class TheaterService {
         var ids = stringify(cityIds);
         callExternalService(ids, batchExistenceUrl, HttpMethod.POST, Boolean.class); // throws exception if any Id is invalid
 
-        this.needToReFetch = true;
         theaterDAO.saveAll(theaters); // save if everything is fine
     }
 
@@ -336,7 +314,6 @@ public class TheaterService {
 
         validateTheaterNamingConstraints(filteredTheaters); // check for naming constraint
 
-        this.needToReFetch = true;
         theaterDAO.saveAll(filteredTheaters);
     }
 
@@ -354,8 +331,6 @@ public class TheaterService {
     private void removeUnderlyingScreens(List<String> theaterIds, List<Theater> theaters) {
         var requestBody = stringify(theaterIds);
         callExternalService(requestBody, removeScreensUrl, HttpMethod.DELETE, Boolean.class);
-
-        this.needToReFetch = true;
         theaterDAO.deleteAll(theaters);
     }
 
