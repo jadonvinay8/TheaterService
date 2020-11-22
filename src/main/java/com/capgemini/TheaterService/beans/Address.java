@@ -67,6 +67,16 @@ public class Address {
 	}
 
 	@Override
+	public String toString() {
+		return "Address{" +
+		"city='" + city + '\'' +
+		", state='" + state + '\'' +
+		", area='" + area + '\'' +
+		", pincode='" + pincode + '\'' +
+		'}';
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;

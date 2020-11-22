@@ -1,17 +1,21 @@
 package com.capgemini.TheaterService.controllers;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.entities.Theater;
+import com.capgemini.TheaterService.utils.CSVConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.capgemini.TheaterService.services.TheaterService;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -20,16 +24,19 @@ import javax.validation.constraints.NotNull;
  * Controller for handling theater related end-points
  *
  * @author Vinay Pratap Singh
+ *
  */
 @RestController
 @RequestMapping("v1/theaters")
 public class TheaterController {
 
     private final TheaterService theaterService;
+    private final CSVConverter csvConverter;
 
     @Autowired
-    public TheaterController(TheaterService theaterService) {
+    public TheaterController(TheaterService theaterService, CSVConverter csvConverter) {
         this.theaterService = theaterService;
+        this.csvConverter = csvConverter;
     }
 
     @GetMapping
@@ -90,6 +97,13 @@ public class TheaterController {
 
         theaterService.removeMovieFromTheater(theaterId, movieId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> addMultipleScreens(@RequestParam("file") MultipartFile file) throws IOException {
+        var theaters = csvConverter.csvToTheaters(file.getInputStream());
+        theaterService.addMultipleTheaters(theaters);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
 }

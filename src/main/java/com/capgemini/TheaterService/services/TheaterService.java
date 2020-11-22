@@ -280,11 +280,15 @@ public class TheaterService {
 
         validateTheaterNamingConstraints(theaters); // check for naming constraint
 
-        // Calling bulk validator to see if all these ids exist
-        var ids = stringify(cityIds);
-        callExternalService(ids, batchExistenceUrl, HttpMethod.POST, Boolean.class); // throws exception if any Id is invalid
+        // validate CityIds existence
+        getCitiesByIds(cityIds);
 
         theaterDAO.saveAll(theaters); // save if everything is fine
+    }
+
+    public Map<String, String> getCitiesByIds(List<String> cityIds) {
+        var ids = stringify(cityIds);
+        return (Map<String, String>) callExternalService(ids, batchExistenceUrl, HttpMethod.POST, Map.class).getBody();
     }
 
     private String stringify(Iterable<String> ids) {

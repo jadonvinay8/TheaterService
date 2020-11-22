@@ -102,6 +102,18 @@ public class Theater {
 	}
 
 	@Override
+	public String toString() {
+		return "Theater{" +
+		"theaterId='" + theaterId + '\'' +
+		", cityId='" + cityId + '\'' +
+		", theaterName='" + theaterName + '\'' +
+		", address=" + address +
+		", rating=" + rating +
+		", movies=" + movies +
+		'}';
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
