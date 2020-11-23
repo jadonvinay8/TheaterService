@@ -1,5 +1,6 @@
 package com.capgemini.TheaterService.services;
 
+import com.capgemini.TheaterService.beans.Address;
 import com.capgemini.TheaterService.beans.MovieRequest;
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.dao.TheaterDAO;
@@ -23,7 +24,14 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -32,6 +40,7 @@ import java.util.stream.StreamSupport;
  * Service class to perform business operations related to Theater functionality
  *
  * @author Vinay Pratap Singh
+ *
  */
 @Service
 @Transactional
@@ -80,49 +89,64 @@ public class TheaterServiceImpl implements TheaterService {
     @Override
     public List<Theater> getAllTheaters() {
         return StreamSupport
-            .stream(theaterDAO.findAll().spliterator(), false)
-            .collect(Collectors.toList());
+          .stream(theaterDAO.findAll().spliterator(), false)
+          .collect(Collectors.toList());
     }
 
     @Override
     public Theater addTheater(Theater theater) {
+        var sanitizedTheater = sanitizeTheater(theater);
         validateCity(theater.getCityId()); // if city not valid, throw city not found exception
-        validateTheaterNamingConstraints(theater); // check for naming constraint
-        return theaterDAO.save(theater);
+        validateTheaterNamingConstraints(sanitizedTheater); // check for naming constraint
+
+        return theaterDAO.save(sanitizedTheater);
     }
 
     private void validateTheaterNamingConstraints(Theater theaterToValidate) {
-        var name = theaterToValidate.getTheaterName();
+        var name = theaterToValidate.getTheaterName().toLowerCase();
         var cityId = theaterToValidate.getCityId();
-        String area = theaterToValidate.getAddress().getArea(); // throws exception if theater with same name is defined in same area
+        String area = theaterToValidate.getAddress().getArea().toLowerCase(); // throws exception if theater with same name is defined in same area
 
         getTheatersInCity(cityId).stream()
-                .filter(theater -> name.equals(theater.getTheaterName()))
-                .filter(theater -> area.equals(theater.getAddress().getArea()))
-                .forEach(theater -> {
-                    throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName()
-                            + " is already present in same area");
-                });
+          .filter(theater -> name.equals(theater.getTheaterName().toLowerCase()))
+          .filter(theater -> area.equals(theater.getAddress().getArea().toLowerCase()))
+          .forEach(theater -> {
+              throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName()
+                + " is already present in same area");
+          });
     }
 
-    private void validateTheaterNamingConstraints(List<Theater> theatersToBeValidated) {
+    private List<Theater> validateTheaterNamingConstraints(List<Theater> theatersToBeValidated) {
         var names = new HashSet<String>();
         var cityIds = new HashSet<String>();
         var areas = new HashSet<String>();
 
         theatersToBeValidated.forEach(theater -> {
-            names.add(theater.getTheaterName());
-            cityIds.add(theater.getCityId());
-            areas.add(theater.getAddress().getArea());
+            var sanitizedTheater = sanitizeTheater(theater);
+            names.add(sanitizedTheater.getTheaterName().toLowerCase());
+            cityIds.add(sanitizedTheater.getCityId());
+            areas.add(sanitizedTheater.getAddress().getArea().toLowerCase());
         });
-        getAllTheaters().stream()
-                .filter(theater -> names.contains(theater.getTheaterName()))
-                .filter(theater -> cityIds.contains(theater.getCityId()))
-                .filter(theater -> areas.contains(theater.getAddress().getArea()))
-                .forEach(theater -> {
-                    throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName()
-                            + " is already present in same area");
-                });
+
+        return getAllTheaters().stream()
+          .filter(theater -> names.contains(theater.getTheaterName().toLowerCase()))
+          .filter(theater -> cityIds.contains(theater.getCityId()))
+          .filter(theater -> areas.contains(theater.getAddress().getArea().toLowerCase()))
+          .peek(theater -> {
+              throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName()
+                + " is already present in same area");
+          })
+          .collect(Collectors.toList());
+    }
+
+    private Theater sanitizeTheater(Theater theater) {
+        theater.setCityId(theater.getCityId().trim());
+        theater.setTheaterName(theater.getTheaterName().trim());
+        var area = theater.getAddress().getArea().trim();
+        var address = new Address(theater.getAddress().getCity(), theater.getAddress().getState(),
+          area, theater.getAddress().getPincode());
+        theater.setAddress(address);
+        return theater;
     }
 
     @Override
@@ -154,15 +178,15 @@ public class TheaterServiceImpl implements TheaterService {
         var theater = findTheaterById(theaterId);
         var movies = theater.getMovies();
         movies.stream()
-                .filter(shortMovie -> shortMovie.getId().equals(movieId))
-                .forEach(shortMovie -> {
-                    throw new InvalidOperationException("Movie already exists in the theater");
-                });
+          .filter(shortMovie -> shortMovie.getId().equals(movieId))
+          .forEach(shortMovie -> {
+              throw new InvalidOperationException("Movie already exists in the theater");
+          });
 
         var movie = retrieveMovie(movieId);
         var movieRequest = new MovieRequest(movieId, Set.of(movie.getMovieDimension()));
         var requestUrl = addMovieToScreenUrl.replaceAll("theaterId", theaterId);
-        callScreenService(requestUrl, movieRequest, HttpMethod.PUT, Void.class);
+        callScreenService(requestUrl, movieRequest, HttpMethod.PUT);
 
         // Add movie to theater if everything goes fine in screen service
         movies.add(new ShortMovie(movieId, movie.getName()));
@@ -175,20 +199,20 @@ public class TheaterServiceImpl implements TheaterService {
     public void removeMovieFromTheater(String theaterId, String movieId) {
         var theater = findTheaterById(theaterId);
         var isMoviePresent = theater.getMovies()
-                .stream()
-                .anyMatch(shortMovie -> shortMovie.getId().equals(movieId));
+          .stream()
+          .anyMatch(shortMovie -> shortMovie.getId().equals(movieId));
 
         if (!isMoviePresent) throw new InvalidOperationException("The movie does not exist in this theater");
 
         var requestUrl = removeMovieFromScreenUrl.replaceAll("theaterId", theaterId)
-                .replaceAll("movieId", movieId);
-        callScreenService(requestUrl, null, HttpMethod.DELETE, Void.class);
+          .replaceAll("movieId", movieId);
+        callScreenService(requestUrl, null, HttpMethod.DELETE);
 
         // Remove the movie if everything goes fine in screen service
-        var movies= theater.getMovies()
-                .stream()
-                .filter(Predicate.not(shortMovie -> shortMovie.getId().equals(movieId)))
-                .collect(Collectors.toList());
+        var movies = theater.getMovies()
+          .stream()
+          .filter(Predicate.not(shortMovie -> shortMovie.getId().equals(movieId)))
+          .collect(Collectors.toList());
 
         theater.setMovies(movies);
         updateTheater(theaterId, theater);
@@ -200,10 +224,10 @@ public class TheaterServiceImpl implements TheaterService {
         map.forEach((theaterId, movieIds) -> {
             var theater = findTheaterById(theaterId);
             List<ShortMovie> movies = theater
-                    .getMovies()
-                    .stream()
-                    .filter(Predicate.not(movie -> movieIds.contains(movie.getId())))
-                    .collect(Collectors.toList());
+              .getMovies()
+              .stream()
+              .filter(Predicate.not(movie -> movieIds.contains(movie.getId())))
+              .collect(Collectors.toList());
             theater.setMovies(movies);
             theatersToBeUpdated.add(theater);
         });
@@ -218,9 +242,9 @@ public class TheaterServiceImpl implements TheaterService {
         return (Movie) response.getBody();
     }
 
-    private void callScreenService(String url, MovieRequest movie, HttpMethod method, Class<?> claas) {
+    private void callScreenService(String url, MovieRequest movie, HttpMethod method) {
         var requestBody = movie == null ? null : stringify(movie);
-        callExternalService(requestBody, url, method, claas);
+        callExternalService(requestBody, url, method, Void.class);
     }
 
     @Override
@@ -232,22 +256,22 @@ public class TheaterServiceImpl implements TheaterService {
     @Override
     public Set<ShortMovie> getMoviesInCity(String cityId) {
         return getTheatersInCity(cityId)
-                .stream()
-                .flatMap(theater -> theater.getMovies().stream())
-                .collect(Collectors.toSet());
+          .stream()
+          .flatMap(theater -> theater.getMovies().stream())
+          .collect(Collectors.toSet());
     }
 
     @Override
     public List<Movie> getFullMoviesInCity(String cityId) {
         Set<String> movieIds = getTheatersInCity(cityId)
-                .stream()
-                .flatMap(theater -> theater.getMovies().stream())
-                .map(ShortMovie::getId)
-                .collect(Collectors.toSet());
+          .stream()
+          .flatMap(theater -> theater.getMovies().stream())
+          .map(ShortMovie::getId)
+          .collect(Collectors.toSet());
 
         var requestBody = stringify(movieIds);
         ResponseEntity<Movie[]> response = (ResponseEntity<Movie[]>) callExternalService(requestBody,
-                getMoviesByIdsUrl, HttpMethod.POST, Movie[].class);
+          getMoviesByIdsUrl, HttpMethod.POST, Movie[].class);
         return Arrays.asList(response.getBody());
     }
 
@@ -256,11 +280,11 @@ public class TheaterServiceImpl implements TheaterService {
         List<Theater> theaters = new ArrayList<>();
 
         getTheatersInCity(cityId).forEach(theater -> theater.getMovies()
-                .stream()
-                .map(ShortMovie::getId)
-                .filter(id -> id.equals(movieId))
-                .peek(id -> theaters.add(theater))
-                .findFirst());
+          .stream()
+          .map(ShortMovie::getId)
+          .filter(id -> id.equals(movieId))
+          .peek(id -> theaters.add(theater))
+          .findFirst());
 
         return theaters;
     }
@@ -269,8 +293,8 @@ public class TheaterServiceImpl implements TheaterService {
     public Boolean validateTheaterAndMovie(String theaterId, String movieId) {
         var theater = findTheaterById(theaterId);
         return theater.getMovies()
-                .stream()
-                .anyMatch(movie -> movie.getId().equals(movieId));
+          .stream()
+          .anyMatch(movie -> movie.getId().equals(movieId));
     }
 
     @Override
@@ -281,8 +305,8 @@ public class TheaterServiceImpl implements TheaterService {
             return;
 
         List<String> theaterIds = theaters.stream()
-                .map(Theater::getTheaterId)
-                .collect(Collectors.toList());
+          .map(Theater::getTheaterId)
+          .collect(Collectors.toList());
 
         removeUnderlyingScreens(theaterIds, theaters);
     }
@@ -296,12 +320,12 @@ public class TheaterServiceImpl implements TheaterService {
             cityIds.add(theater.getCityId());
         });
 
-        validateTheaterNamingConstraints(theaters); // check for naming constraint
+        List<Theater> sanitizedTheaters = validateTheaterNamingConstraints(theaters);// check for naming constraint
 
         // validate CityIds existence
         getCitiesByIds(cityIds);
 
-        theaterDAO.saveAll(theaters); // save if everything is fine
+        theaterDAO.saveAll(sanitizedTheaters); // save if everything is fine
     }
 
     @Override
@@ -331,10 +355,11 @@ public class TheaterServiceImpl implements TheaterService {
         validateCity(cityId); // if city not valid, throw city not found exception
 
         List<Theater> filteredTheaters = validateInputList(theaters)
-                .stream()
-                .filter(Objects::nonNull)
-                .peek(theater -> theater.setCityId(cityId))
-                .collect(Collectors.toList());
+          .stream()
+          .filter(Objects::nonNull)
+          .peek(theater -> theater.setCityId(cityId.trim()))
+          .peek(this::sanitizeTheater)
+          .collect(Collectors.toList());
 
         validateTheaterNamingConstraints(filteredTheaters); // check for naming constraint
 
@@ -342,8 +367,8 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     private void validateCity(String cityId) {
-        var requestUrl = singleExistenceUrl + cityId;
-        callExternalService(null, requestUrl, HttpMethod.GET,  Object.class); // throws exception if id is invalid
+        var requestUrl = singleExistenceUrl + cityId.trim();
+        callExternalService(null, requestUrl, HttpMethod.GET, Object.class); // throws exception if id is invalid
     }
 
     private List<Theater> validateInputList(List<Theater> list) {
@@ -365,8 +390,8 @@ public class TheaterServiceImpl implements TheaterService {
 
         try {
             return requestBody == null && method == HttpMethod.GET
-                    ? restTemplate.getForEntity(url, claas)
-                    : restTemplate.exchange(url, method, entity, claas);
+              ? restTemplate.getForEntity(url, claas)
+              : restTemplate.exchange(url, method, entity, claas);
         } catch (HttpClientErrorException e) {
             throw new EntityNotFoundException("No entity was found with that id");
         } catch (HttpServerErrorException e) {
