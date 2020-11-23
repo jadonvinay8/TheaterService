@@ -54,6 +54,11 @@ public class TheaterController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @GetMapping("{id}")
+    public ResponseEntity<Theater> findById(@PathVariable("id") String id) {
+        return new ResponseEntity<>(theaterService.findTheaterById(id), HttpStatus.OK);
+    }
+
     @PutMapping("{id}")
     public ResponseEntity<Theater> updateTheater(@PathVariable("id") String id, @Valid @RequestBody Theater theater) {
         return new ResponseEntity<>(theaterService.updateTheater(id, theater), HttpStatus.OK);
@@ -99,7 +104,7 @@ public class TheaterController {
     }
 
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> addMultipleScreens(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<Void> addTheatersViaFile(@RequestParam("file") MultipartFile file) throws IOException {
         var theaters = csvConverter.csvToTheaters(file.getInputStream());
         theaterService.addMultipleTheaters(theaters);
         return new ResponseEntity<>(HttpStatus.CREATED);
