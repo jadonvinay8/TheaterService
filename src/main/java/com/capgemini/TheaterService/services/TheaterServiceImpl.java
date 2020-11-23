@@ -358,7 +358,7 @@ public class TheaterServiceImpl implements TheaterService {
           .stream()
           .filter(Objects::nonNull)
           .peek(theater -> theater.setCityId(cityId.trim()))
-          .peek(this::sanitizeTheater)
+          .map(this::sanitizeTheater)
           .collect(Collectors.toList());
 
         validateTheaterNamingConstraints(filteredTheaters); // check for naming constraint
