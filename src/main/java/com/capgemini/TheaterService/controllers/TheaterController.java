@@ -1,24 +1,23 @@
 package com.capgemini.TheaterService.controllers;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.entities.Theater;
+import com.capgemini.TheaterService.services.TheaterService;
 import com.capgemini.TheaterService.utils.CSVConverter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import com.capgemini.TheaterService.services.TheaterService;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Controller for handling theater related end-points

@@ -4,6 +4,7 @@ import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.services.TheaterService;
+import com.capgemini.TheaterService.services.TheaterServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
