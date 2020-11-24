@@ -413,7 +413,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     private Object handleServiceResponse(MicroserviceResponse response) {
-        if (response.getStatus() >= 200 && response.getStatus() <=204) {
+        if (response.getStatus() >= 200 && response.getStatus() <= 204) {
             return response.getPayload().getResponse();
         }
         else {

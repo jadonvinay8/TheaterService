@@ -78,6 +78,12 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.ok(response);
 	}
 
+	@ExceptionHandler(MicroserviceException.class)
+	public ResponseEntity<MicroserviceResponse> serviceCallException(MicroserviceException e) {
+		MicroserviceResponse response = ResponseBuilder.build(HttpStatus.BAD_REQUEST.value(), null, e.getErrorResponse());
+		return ResponseEntity.ok(response);
+	}
+
 	@ExceptionHandler(OperationFailedException.class)
 	public ResponseEntity<MicroserviceResponse> operationFailed(OperationFailedException e) {
 		ErrorResponse errorResponse = new ErrorResponse("Something went wrong in companion service", e.getMessage(), "500");

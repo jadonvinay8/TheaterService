@@ -10,4 +10,7 @@ public class MicroserviceException extends RuntimeException{
         this.errorResponse = errorResponse;
     }
 
+    public ErrorResponse getErrorResponse() {
+        return errorResponse;
+    }
 }
