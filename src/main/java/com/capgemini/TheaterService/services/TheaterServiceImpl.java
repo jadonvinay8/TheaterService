@@ -1,7 +1,6 @@
 package com.capgemini.TheaterService.services;
 
 import com.capgemini.TheaterService.beans.Address;
-import com.capgemini.TheaterService.beans.ErrorResponse;
 import com.capgemini.TheaterService.beans.MovieRequest;
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.dao.TheaterDAO;
@@ -9,26 +8,18 @@ import com.capgemini.TheaterService.dto.MicroserviceResponse;
 import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.exceptions.*;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -184,9 +175,9 @@ public class TheaterServiceImpl implements TheaterService {
           });
 
         var movie = retrieveMovie(movieId);
-//        var movieRequest = new MovieRequest(movieId, Set.of(movie.getMovieDimension()));
-//        var requestUrl = addMovieToScreenUrl.replaceAll("theaterId", theaterId);
-//        callScreenService(requestUrl, movieRequest, HttpMethod.PUT);
+        var movieRequest = new MovieRequest(movieId, Set.of(movie.getMovieDimension()));
+        var requestUrl = addMovieToScreenUrl.replaceAll("theaterId", theaterId);
+        callScreenService(requestUrl, movieRequest, HttpMethod.PUT);
 
         // Add movie to theater if everything goes fine in screen service
         movies.add(new ShortMovie(movieId, movie.getName()));
@@ -204,9 +195,9 @@ public class TheaterServiceImpl implements TheaterService {
 
         if (!isMoviePresent) throw new InvalidOperationException("The movie does not exist in this theater");
 
-//        var requestUrl = removeMovieFromScreenUrl.replaceAll("theaterId", theaterId)
-//          .replaceAll("movieId", movieId);
-//        callScreenService(requestUrl, null, HttpMethod.DELETE);
+        var requestUrl = removeMovieFromScreenUrl.replaceAll("theaterId", theaterId)
+          .replaceAll("movieId", movieId);
+        callScreenService(requestUrl, null, HttpMethod.DELETE);
 
         // Remove the movie if everything goes fine in screen service
         var movies = theater.getMovies()
@@ -372,6 +363,19 @@ public class TheaterServiceImpl implements TheaterService {
         validateTheaterNamingConstraints(filteredTheaters); // check for naming constraint
 
         theaterDAO.saveAll(filteredTheaters);
+    }
+
+    @Override
+    public List<String> validateBatchExistence(List<String> theaterIds) {
+        List<String> invalidIds = new ArrayList<>();
+        theaterIds.forEach(theaterId -> {
+            try {
+                findTheaterById(theaterId);
+            } catch (TheaterNotFoundException ex) {
+                invalidIds.add(theaterId);
+            }
+        });
+        return invalidIds;
     }
 
     private void validateCity(String cityId) {

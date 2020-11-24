@@ -45,4 +45,6 @@ public interface TheaterService {
     Map<String, String> getCitiesByIds(List<String> cityIds);
 
     void addMultipleTheaters(List<Theater> theaters, String cityId);
+
+    List<String> validateBatchExistence(List<String> theaterIds);
 }

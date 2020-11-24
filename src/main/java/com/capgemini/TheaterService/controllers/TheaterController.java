@@ -118,6 +118,12 @@ public class TheaterController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/existence")
+    public ResponseEntity<MicroserviceResponse> checkBatchExistence(@RequestBody List<@NotNull String> theaterIds) {
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(), theaterService.validateBatchExistence(theaterIds), null);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MicroserviceResponse> addTheatersViaFile(@RequestParam("file") MultipartFile file) throws IOException {
         var theaters = csvConverter.csvToTheaters(file.getInputStream());
