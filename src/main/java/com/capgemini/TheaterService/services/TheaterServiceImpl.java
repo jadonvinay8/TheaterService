@@ -1,14 +1,17 @@
 package com.capgemini.TheaterService.services;
 
 import com.capgemini.TheaterService.beans.Address;
+import com.capgemini.TheaterService.beans.ErrorResponse;
 import com.capgemini.TheaterService.beans.MovieRequest;
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.dao.TheaterDAO;
+import com.capgemini.TheaterService.dto.MicroserviceResponse;
 import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.exceptions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +27,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -48,6 +46,8 @@ public class TheaterServiceImpl implements TheaterService {
 
     private final TheaterDAO theaterDAO;
     private final RestTemplate restTemplate;
+    private static final String INVALID_KEY = "Invalid";
+
 
     @Value("${service.location.single}")
     private String singleExistenceUrl;
@@ -235,16 +235,21 @@ public class TheaterServiceImpl implements TheaterService {
         theaterDAO.saveAll(theatersToBeUpdated);
     }
 
-    private Movie retrieveMovie(String movieId) {
+    private Movie retrieveMovie(String movieId)  {
         var requestUrl = getMovieByIdUrl + movieId;
-        var response = callExternalService(null, requestUrl, HttpMethod.GET, Movie.class);
-
-        return (Movie) response.getBody();
+        Object response = handleServiceResponse(callExternalService(null, requestUrl, HttpMethod.GET).getBody());
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Movie movie = mapper.readValue(stringify(response), new TypeReference<>() {});
+            return movie;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Can't process response");
+        }
     }
 
     private void callScreenService(String url, MovieRequest movie, HttpMethod method) {
         var requestBody = movie == null ? null : stringify(movie);
-        callExternalService(requestBody, url, method, Void.class);
+        handleServiceResponse(callExternalService(requestBody, url, method).getBody());
     }
 
     @Override
@@ -270,8 +275,8 @@ public class TheaterServiceImpl implements TheaterService {
           .collect(Collectors.toSet());
 
         var requestBody = stringify(movieIds);
-        ResponseEntity<Movie[]> response = (ResponseEntity<Movie[]>) callExternalService(requestBody, getMoviesByIdsUrl, HttpMethod.POST, Movie[].class);
-        return Arrays.asList(response.getBody());
+        Object response = handleServiceResponse(callExternalService(requestBody, getMoviesByIdsUrl, HttpMethod.POST).getBody());
+        return (List<Movie>) response;
     }
 
     @Override
@@ -322,15 +327,19 @@ public class TheaterServiceImpl implements TheaterService {
         List<Theater> sanitizedTheaters = validateTheaterNamingConstraints(theaters);// check for naming constraint
 
         // validate CityIds existence
-        getCitiesByIds(cityIds);
+        Map<String, String> citiesByIds = getCitiesByIds(cityIds);
 
-        theaterDAO.saveAll(sanitizedTheaters); // save if everything is fine
+        if (citiesByIds.get(INVALID_KEY).length() > 2)
+            throw new CityNotFoundException("These IDs are invalid: " + citiesByIds.get(INVALID_KEY));
+        else
+            theaterDAO.saveAll(sanitizedTheaters); // save if everything is fine
     }
 
     @Override
     public Map<String, String> getCitiesByIds(List<String> cityIds) {
         var ids = stringify(cityIds);
-        return (Map<String, String>) callExternalService(ids, batchExistenceUrl, HttpMethod.POST, Map.class).getBody();
+        Object response = handleServiceResponse(callExternalService(ids, batchExistenceUrl, HttpMethod.POST).getBody());
+        return (Map<String, String>) response;
     }
 
     private String stringify(Iterable<String> ids) {
@@ -341,7 +350,7 @@ public class TheaterServiceImpl implements TheaterService {
         }
     }
 
-    private String stringify(MovieRequest movie) {
+    private String stringify(Object movie) {
         try {
             return new ObjectMapper().writeValueAsString(movie);
         } catch (JsonProcessingException e) {
@@ -367,7 +376,8 @@ public class TheaterServiceImpl implements TheaterService {
 
     private void validateCity(String cityId) {
         var requestUrl = singleExistenceUrl + cityId.trim();
-        callExternalService(null, requestUrl, HttpMethod.GET, Object.class); // throws exception if id is invalid
+        var response = callExternalService(null, requestUrl, HttpMethod.GET);
+        handleServiceResponse(response.getBody());
     }
 
     private List<Theater> validateInputList(List<Theater> list) {
@@ -378,23 +388,32 @@ public class TheaterServiceImpl implements TheaterService {
 
     private void removeUnderlyingScreens(List<String> theaterIds, List<Theater> theaters) {
         var requestBody = stringify(theaterIds);
-        callExternalService(requestBody, removeScreensUrl, HttpMethod.DELETE, Boolean.class);
+        handleServiceResponse(callExternalService(requestBody, removeScreensUrl, HttpMethod.DELETE).getBody());
         theaterDAO.deleteAll(theaters);
     }
 
-    private ResponseEntity<?> callExternalService(String requestBody, String url, HttpMethod method, Class<?> claas) {
+    private ResponseEntity<MicroserviceResponse> callExternalService(String requestBody, String url, HttpMethod method) {
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         var entity = new HttpEntity<>(requestBody, headers);
 
         try {
             return requestBody == null && method == HttpMethod.GET
-              ? restTemplate.getForEntity(url, claas)
-              : restTemplate.exchange(url, method, entity, claas);
+              ? restTemplate.getForEntity(url, MicroserviceResponse.class)
+              : restTemplate.exchange(url, method, entity, MicroserviceResponse.class);
         } catch (HttpClientErrorException e) {
             throw new EntityNotFoundException("No entity was found with that id");
         } catch (HttpServerErrorException e) {
             throw new OperationFailedException("Something went wrong in other API");
+        }
+    }
+
+    private Object handleServiceResponse(MicroserviceResponse response) {
+        if (response.getStatus() >= 200 && response.getStatus() <=204) {
+            return response.getPayload().getResponse();
+        }
+        else {
+            throw new MicroserviceException(response.getPayload().getException());
         }
     }
 
