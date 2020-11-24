@@ -20,24 +20,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
 //                .httpBasic();
 
-        http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.PUT, "/v1/**").hasRole("ADMIN")
-//                .antMatchers(HttpMethod.DELETE, "/v1/**").hasRole("ADMIN")
-//                .antMatchers("/v1/**").hasAnyRole("ADMIN", "USER")
-                .anyRequest().permitAll()
-                .and()
-                .httpBasic();
+//        http.csrf().disable()
+//                .authorizeRequests()
+//                .antMatchers(HttpMethod.POST, "/v1/**").hasRole("ADMIN")
+//                .antMatchers(HttpMethod.PUT, "/v1/**").hasRole("ADMIN")
+////                .antMatchers(HttpMethod.DELETE, "/v1/**").hasRole("ADMIN")
+////                .antMatchers("/v1/**").hasAnyRole("ADMIN", "USER")
+//                .anyRequest().permitAll()
+//                .and()
+//                .httpBasic();
 
 //        http
 //        .csrf()
 //                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
 //        http.addFilterAfter(new CsrfTokenResponseHeaderBindingFilter(), CsrfFilter.class);
 
-//          http.csrf().disable()
-//                  .authorizeRequests()
-//                  .anyRequest().permitAll();
+          http.csrf().disable()
+                  .authorizeRequests()
+                  .anyRequest().permitAll();
     }
 
     @Override

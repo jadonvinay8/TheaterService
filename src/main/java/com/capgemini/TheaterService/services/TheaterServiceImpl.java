@@ -184,9 +184,9 @@ public class TheaterServiceImpl implements TheaterService {
           });
 
         var movie = retrieveMovie(movieId);
-        var movieRequest = new MovieRequest(movieId, Set.of(movie.getMovieDimension()));
-        var requestUrl = addMovieToScreenUrl.replaceAll("theaterId", theaterId);
-        callScreenService(requestUrl, movieRequest, HttpMethod.PUT);
+//        var movieRequest = new MovieRequest(movieId, Set.of(movie.getMovieDimension()));
+//        var requestUrl = addMovieToScreenUrl.replaceAll("theaterId", theaterId);
+//        callScreenService(requestUrl, movieRequest, HttpMethod.PUT);
 
         // Add movie to theater if everything goes fine in screen service
         movies.add(new ShortMovie(movieId, movie.getName()));
@@ -204,9 +204,9 @@ public class TheaterServiceImpl implements TheaterService {
 
         if (!isMoviePresent) throw new InvalidOperationException("The movie does not exist in this theater");
 
-        var requestUrl = removeMovieFromScreenUrl.replaceAll("theaterId", theaterId)
-          .replaceAll("movieId", movieId);
-        callScreenService(requestUrl, null, HttpMethod.DELETE);
+//        var requestUrl = removeMovieFromScreenUrl.replaceAll("theaterId", theaterId)
+//          .replaceAll("movieId", movieId);
+//        callScreenService(requestUrl, null, HttpMethod.DELETE);
 
         // Remove the movie if everything goes fine in screen service
         var movies = theater.getMovies()
@@ -270,8 +270,7 @@ public class TheaterServiceImpl implements TheaterService {
           .collect(Collectors.toSet());
 
         var requestBody = stringify(movieIds);
-        ResponseEntity<Movie[]> response = (ResponseEntity<Movie[]>) callExternalService(requestBody,
-          getMoviesByIdsUrl, HttpMethod.POST, Movie[].class);
+        ResponseEntity<Movie[]> response = (ResponseEntity<Movie[]>) callExternalService(requestBody, getMoviesByIdsUrl, HttpMethod.POST, Movie[].class);
         return Arrays.asList(response.getBody());
     }
 
