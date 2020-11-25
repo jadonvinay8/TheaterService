@@ -10,7 +10,7 @@ public class ErrorResponse {
 		// Default Constructor
 	}
 
-	public ErrorResponse(String errorMsg, String code, String cause) {
+	public ErrorResponse(String errorMsg, String cause, String code) {
 		this.errorMsg = errorMsg;
 		this.code = code;
 		this.cause = cause;
