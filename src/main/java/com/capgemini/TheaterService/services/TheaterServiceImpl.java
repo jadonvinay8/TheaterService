@@ -341,9 +341,9 @@ public class TheaterServiceImpl implements TheaterService {
         }
     }
 
-    private String stringify(Object movie) {
+    private String stringify(Object object) {
         try {
-            return new ObjectMapper().writeValueAsString(movie);
+            return new ObjectMapper().writeValueAsString(object);
         } catch (JsonProcessingException e) {
             throw new InvalidOperationException("Can't process JSON");
         }
