@@ -9,87 +9,93 @@ import java.util.Objects;
 @DynamoDBDocument
 public class Address {
 
-	@NotNull
-	@NotBlank
-	private	String city;
+    @NotNull
+    @NotBlank
+    private String city;
 
-	@NotNull
-	@NotBlank
-	private	String state;
-	private	String area;
+    @NotNull
+    @NotBlank
+    private String state;
+    private String area;
 
-	@NotNull
-	@NotBlank
-	private	String pincode;
-	
-	public Address() {
-		// Default Constructor
-	}
+    @NotNull
+    @NotBlank
+    private String pincode;
 
-	public Address(String city, String state, String area, String pinCode) {
-		super();
-		this.city = city;
-		this.state = state;
-		this.area = area;
-		this.pincode = pinCode;
-	}
+    public Address() {
+        // Default Constructor
+    }
 
-	public String getCity() {
-		return city;
-	}
+    public Address(String city, String state, String area, String pinCode) {
+        super();
+        this.city = city;
+        this.state = state;
+        this.area = area;
+        this.pincode = pinCode;
+    }
 
-	public void setCity(String city) {
-		this.city = city;
-	}
+    public String getCity() {
+        return city;
+    }
 
-	public String getState() {
-		return state;
-	}
+    public void setCity(String city) {
+        this.city = city;
+    }
 
-	public void setState(String state) {
-		this.state = state;
-	}
+    public String getState() {
+        return state;
+    }
 
-	public String getArea() {
-		return area;
-	}
+    public void setState(String state) {
+        this.state = state;
+    }
 
-	public void setArea(String area) {
-		this.area = area;
-	}
+    public String getArea() {
+        return area;
+    }
 
-	public String getPincode() {
-		return pincode;
-	}
+    public void setArea(String area) {
+        this.area = area;
+    }
 
-	public void setPincode(String pincode) {
-		this.pincode = pincode;
-	}
+    public String getPincode() {
+        return pincode;
+    }
 
-	@Override
-	public String toString() {
-		return "Address{" +
-		"city='" + city + '\'' +
-		", state='" + state + '\'' +
-		", area='" + area + '\'' +
-		", pincode='" + pincode + '\'' +
-		'}';
-	}
+    public void setPincode(String pincode) {
+        this.pincode = pincode;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		Address address = (Address) o;
-		return Objects.equals(city, address.city) &&
-				Objects.equals(state, address.state) &&
-				Objects.equals(area, address.area) &&
-				Objects.equals(pincode, address.pincode);
-	}
+    @Override
+    public String toString() {
+        return "Address{" +
+          "city='" + city + '\'' +
+          ", state='" + state + '\'' +
+          ", area='" + area + '\'' +
+          ", pincode='" + pincode + '\'' +
+          '}';
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(city, state, area, pincode);
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Address address = (Address) o;
+        return Objects.equals(city, address.city) &&
+          Objects.equals(state, address.state) &&
+          Objects.equals(area, address.area) &&
+          Objects.equals(pincode, address.pincode);
+    }
+
+    public static boolean checkCityEquality(Address address1, Address address2) {
+        return address1.getCity().equals(address2.getCity()) &&
+          address1.getPincode().equals(address2.getPincode()) &&
+          address1.getState().equals(address2.getState());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(city, state, area, pincode);
+    }
 
 }

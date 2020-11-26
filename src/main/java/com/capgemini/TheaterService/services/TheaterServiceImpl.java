@@ -29,7 +29,6 @@ import java.util.stream.StreamSupport;
  * Service class to perform business operations related to Theater functionality
  *
  * @author Vinay Pratap Singh
- *
  */
 @Service
 @Transactional
@@ -157,10 +156,10 @@ public class TheaterServiceImpl implements TheaterService {
 
         // validateTheaterNamingConstraints(theater); // check for naming constraint
 
-        if (retrievedTheater.getCityId().equals(theater.getCityId())) {
+        if (Theater.canUpdateTheater(retrievedTheater, theater)) {
             return theaterDAO.save(theater);
         } else {
-            throw new InvalidOperationException("can't change city id");
+            throw new InvalidOperationException("can't change city or list of movies");
         }
     }
 
@@ -226,12 +225,13 @@ public class TheaterServiceImpl implements TheaterService {
         theaterDAO.saveAll(theatersToBeUpdated);
     }
 
-    private Movie retrieveMovie(String movieId)  {
+    private Movie retrieveMovie(String movieId) {
         var requestUrl = getMovieByIdUrl + movieId;
         Object response = handleServiceResponse(callExternalService(null, requestUrl, HttpMethod.GET).getBody());
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Movie movie = mapper.readValue(stringify(response), new TypeReference<>() {});
+            Movie movie = mapper.readValue(stringify(response), new TypeReference<>() {
+            });
             return movie;
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Can't process response");
@@ -415,8 +415,7 @@ public class TheaterServiceImpl implements TheaterService {
     private Object handleServiceResponse(MicroserviceResponse response) {
         if (response.getStatus() >= 200 && response.getStatus() <= 204) {
             return response.getPayload().getResponse();
-        }
-        else {
+        } else {
             throw new MicroserviceException(response.getPayload().getException());
         }
     }
