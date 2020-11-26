@@ -182,7 +182,11 @@ public class TheaterServiceImpl implements TheaterService {
         movies.add(new ShortMovie(movieId, movie.getName()));
         theater.setMovies(movies);
 
-        return updateTheater(theaterId, theater);
+        return updateTheater(theater);
+    }
+
+    private Theater updateTheater(Theater theater) {
+        return theaterDAO.save(theater);
     }
 
     @Override
@@ -205,7 +209,7 @@ public class TheaterServiceImpl implements TheaterService {
           .collect(Collectors.toList());
 
         theater.setMovies(movies);
-        updateTheater(theaterId, theater);
+        updateTheater(theater);
     }
 
     @Override
