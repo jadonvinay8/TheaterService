@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MicroserviceException.class)
 	public ResponseEntity<MicroserviceResponse> serviceCallException(MicroserviceException e) {
-		MicroserviceResponse response = ResponseBuilder.build(HttpStatus.BAD_REQUEST.value(), null, e.getErrorResponse());
+		MicroserviceResponse response = ResponseBuilder.build(Integer.parseInt(e.getErrorResponse().getCode()), null, e.getErrorResponse());
 		return ResponseEntity.ok(response);
 	}
 
