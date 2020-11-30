@@ -1,6 +1,7 @@
 package com.capgemini.TheaterService.services;
 
 import com.capgemini.TheaterService.beans.ShortMovie;
+import com.capgemini.TheaterService.dto.NumberOfShows;
 import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
 
@@ -22,7 +23,7 @@ public interface TheaterService {
 
     Theater updateTheater(String id, Theater theater);
 
-    Theater addMovieInTheater(String theaterId, String movieId);
+    Theater addMovieInTheater(String theaterId, String movieId, NumberOfShows shows);
 
     void removeMovieFromTheater(String theaterId, String movieId);
 

@@ -1,6 +1,7 @@
 package com.capgemini.TheaterService.controllers;
 
 import com.capgemini.TheaterService.dto.MicroserviceResponse;
+import com.capgemini.TheaterService.dto.NumberOfShows;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.services.TheaterService;
 import com.capgemini.TheaterService.utils.CSVConverter;
@@ -25,7 +26,6 @@ import java.util.Set;
  * Controller for handling theater related end-points
  *
  * @author Vinay Pratap Singh
- *
  */
 @RestController
 @RequestMapping("v1/theaters")
@@ -89,7 +89,7 @@ public class TheaterController {
 
     @GetMapping("{id}/{movieId}")
     public ResponseEntity<MicroserviceResponse> validateTheaterAndMovie(@PathVariable("id") String theaterId,
-                                                           @PathVariable("movieId") String movieId) {
+                                                                        @PathVariable("movieId") String movieId) {
 
         MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(), theaterService.validateTheaterAndMovie(theaterId, movieId), null);
         return ResponseEntity.ok(response);
@@ -103,15 +103,16 @@ public class TheaterController {
 
     @PostMapping("/{id}/movies/{movieId}")
     public ResponseEntity<MicroserviceResponse> addMovieToTheater(@PathVariable("id") @NotNull String id,
-                                                     @PathVariable("movieId") @NotNull String movieId) {
+                                                                  @PathVariable("movieId") @NotNull String movieId,
+                                                                  @Valid @RequestBody NumberOfShows numberOfShows) {
 
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.CREATED.value(), theaterService.addMovieInTheater(id, movieId), null);
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.CREATED.value(), theaterService.addMovieInTheater(id, movieId, numberOfShows), null);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}/movies/{movieId}")
     public ResponseEntity<MicroserviceResponse> removeMovieFromTheater(@PathVariable("id") String theaterId,
-                                                       @PathVariable("movieId") String movieId) {
+                                                                       @PathVariable("movieId") String movieId) {
 
         theaterService.removeMovieFromTheater(theaterId, movieId);
         MicroserviceResponse response = ResponseBuilder.build(HttpStatus.NO_CONTENT.value(), SUCCESS_MESSAGE, null);
