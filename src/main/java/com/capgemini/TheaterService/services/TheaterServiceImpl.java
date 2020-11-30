@@ -262,6 +262,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
+    @SuppressWarnings(value = "unchecked")
     public List<Movie> getFullMoviesInCity(String cityId) {
         Set<String> movieIds = getTheatersInCity(cityId)
           .stream()
@@ -278,12 +279,14 @@ public class TheaterServiceImpl implements TheaterService {
     public List<Theater> getTheatersRunningThisMovie(String cityId, String movieId) {
         List<Theater> theaters = new ArrayList<>();
 
-        getTheatersInCity(cityId).forEach(theater -> theater.getMovies()
-          .stream()
-          .map(ShortMovie::getId)
-          .filter(id -> id.equals(movieId))
-          .peek(id -> theaters.add(theater))
-          .findFirst());
+        for (Theater theater : getTheatersInCity(cityId)) {
+            theater.getMovies()
+              .stream()
+              .map(ShortMovie::getId)
+              .filter(id -> id.equals(movieId))
+              .findFirst()
+              .ifPresent(id -> theaters.add(theater));
+        }
 
         return theaters;
     }
@@ -331,6 +334,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
+    @SuppressWarnings(value = "unchecked")
     public Map<String, String> getCitiesByIds(List<String> cityIds) {
         var ids = stringify(cityIds);
         Object response = handleServiceResponse(Objects.requireNonNull(callExternalService(ids, batchExistenceUrl, HttpMethod.POST).getBody()));
