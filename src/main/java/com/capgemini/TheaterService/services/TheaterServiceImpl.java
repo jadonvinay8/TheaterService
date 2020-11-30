@@ -232,12 +232,11 @@ public class TheaterServiceImpl implements TheaterService {
 
     private Movie retrieveMovie(String movieId) {
         var requestUrl = getMovieByIdUrl + movieId;
-        Object response = handleServiceResponse(callExternalService(null, requestUrl, HttpMethod.GET).getBody());
+        Object response = handleServiceResponse(Objects.requireNonNull(callExternalService(null, requestUrl, HttpMethod.GET).getBody()));
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Movie movie = mapper.readValue(stringify(response), new TypeReference<>() {
+            return mapper.readValue(stringify(response), new TypeReference<>() {
             });
-            return movie;
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Can't process response");
         }
@@ -245,7 +244,7 @@ public class TheaterServiceImpl implements TheaterService {
 
     private void callScreenService(String url, MovieRequest movie, HttpMethod method) {
         var requestBody = movie == null ? null : stringify(movie);
-        handleServiceResponse(callExternalService(requestBody, url, method).getBody());
+        handleServiceResponse(Objects.requireNonNull(callExternalService(requestBody, url, method).getBody()));
     }
 
     @Override
@@ -271,7 +270,7 @@ public class TheaterServiceImpl implements TheaterService {
           .collect(Collectors.toSet());
 
         var requestBody = stringify(movieIds);
-        Object response = handleServiceResponse(callExternalService(requestBody, getMoviesByIdsUrl, HttpMethod.POST).getBody());
+        Object response = handleServiceResponse(Objects.requireNonNull(callExternalService(requestBody, getMoviesByIdsUrl, HttpMethod.POST).getBody()));
         return (List<Movie>) response;
     }
 
@@ -334,7 +333,7 @@ public class TheaterServiceImpl implements TheaterService {
     @Override
     public Map<String, String> getCitiesByIds(List<String> cityIds) {
         var ids = stringify(cityIds);
-        Object response = handleServiceResponse(callExternalService(ids, batchExistenceUrl, HttpMethod.POST).getBody());
+        Object response = handleServiceResponse(Objects.requireNonNull(callExternalService(ids, batchExistenceUrl, HttpMethod.POST).getBody()));
         return (Map<String, String>) response;
     }
 
@@ -386,7 +385,7 @@ public class TheaterServiceImpl implements TheaterService {
     private void validateCity(String cityId) {
         var requestUrl = singleExistenceUrl + cityId.trim();
         var response = callExternalService(null, requestUrl, HttpMethod.GET);
-        handleServiceResponse(response.getBody());
+        handleServiceResponse(Objects.requireNonNull(response.getBody()));
     }
 
     private List<Theater> validateInputList(List<Theater> list) {
@@ -397,7 +396,7 @@ public class TheaterServiceImpl implements TheaterService {
 
     private void removeUnderlyingScreens(List<String> theaterIds, List<Theater> theaters) {
         var requestBody = stringify(theaterIds);
-        handleServiceResponse(callExternalService(requestBody, removeScreensUrl, HttpMethod.DELETE).getBody());
+        handleServiceResponse(Objects.requireNonNull(callExternalService(requestBody, removeScreensUrl, HttpMethod.DELETE).getBody()));
         theaterDAO.deleteAll(theaters);
     }
 
