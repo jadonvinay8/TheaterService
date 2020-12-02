@@ -68,7 +68,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public Theater findTheaterById(String id) {
+    public Theater findTheaterById(String id) throws TheaterNotFoundException {
         return theaterDAO.findById(id).orElseThrow(TheaterNotFoundException::new);
     }
 
@@ -85,7 +85,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public Theater addTheater(Theater theater) {
+    public Theater addTheater(Theater theater) throws CityNotFoundException, TheaterNameValidationFailedException {
         var sanitizedTheater = sanitizeTheater(theater);
         validateCity(theater.getCityId()); // if city not valid, throw city not found exception
         validateTheaterNamingConstraints(sanitizedTheater); // check for naming constraint
@@ -141,7 +141,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public void removeTheater(String theaterId) {
+    public void removeTheater(String theaterId) throws TheaterNotFoundException {
         var theater = findTheaterById(theaterId);
 
         var theaterIdList = List.of(theaterId);
@@ -151,7 +151,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public Theater updateTheater(String id, Theater theater) {
+    public Theater updateTheater(String id, Theater theater) throws TheaterNotFoundException, InvalidOperationException {
         var retrievedTheater = findTheaterById(id); // throw an exception if id doesn't exist
         theater.setTheaterId(id);
 
@@ -165,7 +165,8 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public Theater addMovieInTheater(String theaterId, String movieId, NumberOfShows numberOfShows) {
+    public Theater addMovieInTheater(String theaterId, String movieId, NumberOfShows numberOfShows)
+      throws TheaterNotFoundException, MicroserviceException {
         var theater = findTheaterById(theaterId);
         var movies = theater.getMovies();
         movies.stream()
@@ -191,7 +192,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public void removeMovieFromTheater(String theaterId, String movieId) {
+    public void removeMovieFromTheater(String theaterId, String movieId) throws TheaterNotFoundException, MicroserviceException {
         var theater = findTheaterById(theaterId);
         var isMoviePresent = theater.getMovies()
           .stream()
@@ -214,7 +215,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public void removeTheseMoviesFromTheseTheaters(Map<String, Set<String>> map) {
+    public void removeTheseMoviesFromTheseTheaters(Map<String, Set<String>> map) throws TheaterNotFoundException {
         List<Theater> theatersToBeUpdated = new ArrayList<>();
         map.forEach((theaterId, movieIds) -> {
             var theater = findTheaterById(theaterId);
@@ -248,13 +249,13 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public List<Theater> getTheatersInCity(String cityId) {
+    public List<Theater> getTheatersInCity(String cityId) throws CityNotFoundException {
         validateCity(cityId); // if city not valid, throw city not found exception
         return theaterDAO.findByCityId(cityId);
     }
 
     @Override
-    public Set<ShortMovie> getMoviesInCity(String cityId) {
+    public Set<ShortMovie> getMoviesInCity(String cityId) throws CityNotFoundException {
         return getTheatersInCity(cityId)
           .stream()
           .flatMap(theater -> theater.getMovies().stream())
@@ -263,7 +264,7 @@ public class TheaterServiceImpl implements TheaterService {
 
     @Override
     @SuppressWarnings(value = "unchecked")
-    public List<Movie> getFullMoviesInCity(String cityId) {
+    public List<Movie> getFullMoviesInCity(String cityId) throws CityNotFoundException, MicroserviceException {
         Set<String> movieIds = getTheatersInCity(cityId)
           .stream()
           .flatMap(theater -> theater.getMovies().stream())
@@ -276,7 +277,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public List<Theater> getTheatersRunningThisMovie(String cityId, String movieId) {
+    public List<Theater> getTheatersRunningThisMovie(String cityId, String movieId) throws CityNotFoundException {
         List<Theater> theaters = new ArrayList<>();
 
         for (Theater theater : getTheatersInCity(cityId)) {
@@ -292,7 +293,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public Boolean validateTheaterAndMovie(String theaterId, String movieId) {
+    public Boolean validateTheaterAndMovie(String theaterId, String movieId) throws TheaterNotFoundException {
         var theater = findTheaterById(theaterId);
         return theater.getMovies()
           .stream()
@@ -300,7 +301,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public void removeTheatersFromCity(String cityId) {
+    public void removeTheatersFromCity(String cityId) throws MicroserviceException {
         validateCity(cityId); // if city not valid, throw city not found exception
         var theaters = theaterDAO.findByCityId(cityId);
         if (theaters.isEmpty())
@@ -314,7 +315,8 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public void addMultipleTheaters(List<Theater> theaters) {
+    public void addMultipleTheaters(List<Theater> theaters) throws TheaterNameValidationFailedException,
+      NullPointerException, MicroserviceException, CityNotFoundException {
         List<String> cityIds = new ArrayList<>(theaters.size());
         validateInputList(theaters).forEach(theater -> {
             if (theater.getCityId() == null)
@@ -335,7 +337,7 @@ public class TheaterServiceImpl implements TheaterService {
 
     @Override
     @SuppressWarnings(value = "unchecked")
-    public Map<String, String> getCitiesByIds(List<String> cityIds) {
+    public Map<String, String> getCitiesByIds(List<String> cityIds) throws MicroserviceException {
         var ids = stringify(cityIds);
         Object response = handleServiceResponse(Objects.requireNonNull(callExternalService(ids, batchExistenceUrl, HttpMethod.POST).getBody()));
         return (Map<String, String>) response;
@@ -358,7 +360,7 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public void addMultipleTheaters(List<Theater> theaters, String cityId) {
+    public void addMultipleTheaters(List<Theater> theaters, String cityId) throws MicroserviceException, TheaterNameValidationFailedException {
         validateCity(cityId); // if city not valid, throw city not found exception
 
         List<Theater> filteredTheaters = validateInputList(theaters)
@@ -386,13 +388,13 @@ public class TheaterServiceImpl implements TheaterService {
         return invalidIds;
     }
 
-    private void validateCity(String cityId) {
+    private void validateCity(String cityId) throws MicroserviceException {
         var requestUrl = singleExistenceUrl + cityId.trim();
         var response = callExternalService(null, requestUrl, HttpMethod.GET);
         handleServiceResponse(Objects.requireNonNull(response.getBody()));
     }
 
-    private List<Theater> validateInputList(List<Theater> list) {
+    private List<Theater> validateInputList(List<Theater> list) throws NullPointerException {
         return Optional.ofNullable(list).orElseThrow(() -> {
             throw new NullPointerException("Null value supplied in payload");
         });
@@ -420,7 +422,7 @@ public class TheaterServiceImpl implements TheaterService {
         }
     }
 
-    private Object handleServiceResponse(MicroserviceResponse response) {
+    private Object handleServiceResponse(MicroserviceResponse response) throws MicroserviceException {
         if (response.getStatus() >= 200 && response.getStatus() <= 204) {
             return response.getPayload().getResponse();
         } else {

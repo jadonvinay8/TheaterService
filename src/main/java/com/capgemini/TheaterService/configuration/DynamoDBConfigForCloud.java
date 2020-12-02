@@ -14,18 +14,18 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 
-@Configuration
-@EnableDynamoDBRepositories(basePackages = "com.capgemini.TheaterService")
+//@Configuration
+//@EnableDynamoDBRepositories(basePackages = "com.capgemini.TheaterService")
 public class DynamoDBConfigForCloud {
 
-    @Bean
+    // @Bean
     public AmazonDynamoDB amazonDynamoDB() {
         return AmazonDynamoDBClientBuilder.standard()
           .withRegion(Regions.US_EAST_1)
           .build();
     }
 
-    @PostConstruct
+    //@PostConstruct
     private void setupTables() {
         AmazonDynamoDB amazonDynamoDB = amazonDynamoDB();
         DynamoDBMapper mapper = new DynamoDBMapper(amazonDynamoDB);

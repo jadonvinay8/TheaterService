@@ -44,13 +44,15 @@ public class TheaterController {
 
     @GetMapping
     public ResponseEntity<MicroserviceResponse> getAllTheaters() {
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(), theaterService.getAllTheaters(), null);
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(),
+          theaterService.getAllTheaters(), null);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<MicroserviceResponse> addTheater(@Valid @RequestBody Theater theater) {
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.CREATED.value(), theaterService.addTheater(theater), null);
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.CREATED.value(),
+          theaterService.addTheater(theater), null);
         return ResponseEntity.ok(response);
     }
 
@@ -63,13 +65,16 @@ public class TheaterController {
 
     @GetMapping("{id}")
     public ResponseEntity<MicroserviceResponse> findById(@PathVariable("id") String id) {
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(), theaterService.findTheaterById(id), null);
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(),
+          theaterService.findTheaterById(id), null);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<MicroserviceResponse> updateTheater(@PathVariable("id") String id, @Valid @RequestBody Theater theater) {
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(), theaterService.updateTheater(id, theater), null);
+    public ResponseEntity<MicroserviceResponse> updateTheater(@PathVariable("id") String id,
+                                                              @Valid @RequestBody Theater theater) {
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(),
+          theaterService.updateTheater(id, theater), null);
         return ResponseEntity.ok(response);
     }
 
@@ -91,13 +96,15 @@ public class TheaterController {
     public ResponseEntity<MicroserviceResponse> validateTheaterAndMovie(@PathVariable("id") String theaterId,
                                                                         @PathVariable("movieId") String movieId) {
 
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(), theaterService.validateTheaterAndMovie(theaterId, movieId), null);
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(),
+          theaterService.validateTheaterAndMovie(theaterId, movieId), null);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("{id}/movies")
     public ResponseEntity<MicroserviceResponse> getMoviesInATheater(@PathVariable("id") String id) {
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(), theaterService.getMovies(id), null);
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(),
+          theaterService.getMovies(id), null);
         return ResponseEntity.ok(response);
     }
 
@@ -106,7 +113,8 @@ public class TheaterController {
                                                                   @PathVariable("movieId") @NotNull String movieId,
                                                                   @Valid @RequestBody NumberOfShows numberOfShows) {
 
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.CREATED.value(), theaterService.addMovieInTheater(id, movieId, numberOfShows), null);
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.CREATED.value(),
+          theaterService.addMovieInTheater(id, movieId, numberOfShows), null);
         return ResponseEntity.ok(response);
     }
 
@@ -121,7 +129,8 @@ public class TheaterController {
 
     @PostMapping("/existence")
     public ResponseEntity<MicroserviceResponse> checkBatchExistence(@RequestBody List<@NotNull String> theaterIds) {
-        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(), theaterService.validateBatchExistence(theaterIds), null);
+        MicroserviceResponse response = ResponseBuilder.build(HttpStatus.OK.value(),
+          theaterService.validateBatchExistence(theaterIds), null);
         return ResponseEntity.ok(response);
     }
 
