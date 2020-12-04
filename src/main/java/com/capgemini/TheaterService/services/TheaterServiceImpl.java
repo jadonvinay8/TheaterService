@@ -85,9 +85,9 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public Theater addTheater(Theater theater) throws CityNotFoundException, TheaterNameValidationFailedException {
+    public Theater addTheater(Theater theater) throws MicroserviceException, TheaterNameValidationFailedException {
         var sanitizedTheater = sanitizeTheater(theater);
-        validateCity(theater.getCityId()); // if city not valid, throw city not found exception
+        validateCity(theater.getCityId()); // if city not valid, throw MicroserviceException
         validateTheaterNamingConstraints(sanitizedTheater); // check for naming constraint
 
         return theaterDAO.save(sanitizedTheater);
@@ -304,8 +304,7 @@ public class TheaterServiceImpl implements TheaterService {
     public void removeTheatersFromCity(String cityId) throws MicroserviceException {
         validateCity(cityId); // if city not valid, throw city not found exception
         var theaters = theaterDAO.findByCityId(cityId);
-        if (theaters.isEmpty())
-            return;
+        if (theaters.isEmpty()) return;
 
         List<String> theaterIds = theaters.stream()
           .map(Theater::getTheaterId)

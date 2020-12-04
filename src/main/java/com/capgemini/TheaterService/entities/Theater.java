@@ -37,8 +37,17 @@ public class Theater {
         // Default Constructor
     }
 
+    public Theater(String theaterId, String cityId, @NotNull @NotBlank String theaterName, @NotNull Address address,
+                   @NotNull @Min(1) @Max(5) Double rating, List<ShortMovie> movies) {
+        this.theaterId = theaterId;
+        this.cityId = cityId;
+        this.theaterName = theaterName;
+        this.address = address;
+        this.rating = rating;
+        this.movies = movies;
+    }
+
     public Theater(String theatreName, Address address, String cityId, Double rating, List<ShortMovie> movies) {
-        super();
         this.theaterName = theatreName;
         this.address = address;
         this.cityId = cityId;

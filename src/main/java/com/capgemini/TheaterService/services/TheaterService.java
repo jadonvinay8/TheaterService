@@ -18,7 +18,7 @@ public interface TheaterService {
 
     List<Theater> getAllTheaters();
 
-    Theater addTheater(Theater theater) throws CityNotFoundException, TheaterNameValidationFailedException;
+    Theater addTheater(Theater theater) throws MicroserviceException, TheaterNameValidationFailedException;
 
     void removeTheater(String theaterId) throws TheaterNotFoundException;
 
@@ -49,4 +49,5 @@ public interface TheaterService {
     void addMultipleTheaters(List<Theater> theaters, String cityId) throws MicroserviceException, TheaterNameValidationFailedException;
 
     List<String> validateBatchExistence(List<String> theaterIds);
+
 }
