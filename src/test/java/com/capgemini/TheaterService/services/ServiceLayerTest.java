@@ -142,7 +142,7 @@ public class ServiceLayerTest {
         String id = "2";
         Theater theater = theaterMap.get(id);
         when(theaterDAO.findById(id)).thenReturn(Optional.ofNullable(theaterMap.get(id)));
-        Movie movie = new Movie("1", "movie", "", "", Dimension._2D, 5.0, Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
+        Movie movie = new Movie("1", "movie", "", "", Dimension._2D, 5.0, "moviePoster", Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
         MicroserviceResponse response = ResponseBuilder.build(200, movie, null);
         ReflectionTestUtils.setField(service, "addMovieToScreenUrl", id);
         ReflectionTestUtils.setField(service, "getMovieByIdUrl", id);
@@ -156,7 +156,7 @@ public class ServiceLayerTest {
     public void testRemoveMovieFromTheater() {
         String id = "1";
         Theater theater = theaterMap.get(id);
-        Movie movie = new Movie("1", "movie", "", "", Dimension._2D, 5.0, Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
+        Movie movie = new Movie("1", "movie", "", "", Dimension._2D, 5.0, "moviePoster", Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
         theater.setMovies(List.of(new ShortMovie(movie.getMovieId(), movie.getName())));
         when(theaterDAO.findById(id)).thenReturn(Optional.of(theater));
         MicroserviceResponse response = ResponseBuilder.build(200, movie, null);
@@ -180,7 +180,7 @@ public class ServiceLayerTest {
     public void testRemoveTheseMoviesFromTheseTheaters() {
         String id = "1";
         Theater theater = theaterMap.get(id);
-        Movie movie = new Movie("1", "movie", "", "", Dimension._2D, 5.0, Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
+        Movie movie = new Movie("1", "movie", "", "", Dimension._2D, 5.0, "moviePoster", Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
         theater.setMovies(List.of(new ShortMovie(movie.getMovieId(), movie.getName())));
         when(theaterDAO.findById(id)).thenReturn(Optional.of(theater));
         HashMap<String, Set<String>> map = new HashMap<>();
@@ -224,8 +224,8 @@ public class ServiceLayerTest {
         when(restTemplate.getForEntity(anyString(), eq(MicroserviceResponse.class))).thenReturn(ResponseEntity.ok(response));
         when(theaterDAO.findByCityId(id)).thenReturn(theaters);
         ReflectionTestUtils.setField(service, "getMoviesByIdsUrl", id);
-        Movie movie3 = new Movie("1", "movie", "", "", Dimension._2D, 5.0, Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
-        Movie movie4 = new Movie("2", "movie", "", "", Dimension._2D, 5.0, Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
+        Movie movie3 = new Movie("1", "movie", "", "", Dimension._2D, 5.0, "moviePoster", Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
+        Movie movie4 = new Movie("2", "movie", "", "", Dimension._2D, 5.0, "moviePoster", Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
         MicroserviceResponse movieResponse = ResponseBuilder.build(200, List.of(movie3, movie4), null);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(MicroserviceResponse.class))).thenReturn(ResponseEntity.ok(movieResponse));
         assertEquals(List.of(movie3, movie4), service.getFullMoviesInCity(id));

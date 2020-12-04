@@ -13,6 +13,7 @@ public class Movie {
     private String duration;
     private Dimension movieDimension;
     private Double rating;
+    private String moviePoster;
     private Date dateReleased;
     private List<String> casts;
     private List<String> languages;
@@ -22,13 +23,14 @@ public class Movie {
     }
 
     public Movie(String movieId, String name, String genre, String duration, Dimension movieDimension, Double rating,
-                 Date dateReleased, List<String> casts, List<String> languages) {
+                 String moviePoster, Date dateReleased, List<String> casts, List<String> languages) {
         this.movieId = movieId;
         this.name = name;
         this.genre = genre;
         this.duration = duration;
         this.movieDimension = movieDimension;
         this.rating = rating;
+        this.moviePoster = moviePoster;
         this.dateReleased = dateReleased;
         this.casts = casts;
         this.languages = languages;
@@ -105,4 +107,13 @@ public class Movie {
     public void setLanguages(List<String> languages) {
         this.languages = languages;
     }
+
+    public String getMoviePoster() {
+        return moviePoster;
+    }
+
+    public void setMoviePoster(String moviePoster) {
+        this.moviePoster = moviePoster;
+    }
+
 }
