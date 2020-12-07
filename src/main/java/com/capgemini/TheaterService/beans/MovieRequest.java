@@ -1,5 +1,7 @@
 package com.capgemini.TheaterService.beans;
 
+import com.capgemini.TheaterService.dto.ShowsInfo;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
@@ -12,17 +14,17 @@ public class MovieRequest {
     private Set<Dimension> dimensions;
     @NotEmpty
     private String movieDuration;
-    @NotEmpty
-    private Integer noOfShows;
+
+    private ShowsInfo showsInfo;
 
     public MovieRequest() {
     }
 
-    public MovieRequest(@NotNull String movieId, @NotNull Set<Dimension> dimensions, @NotEmpty String movieDuration, @NotEmpty Integer noOfShows) {
+    public MovieRequest(@NotNull String movieId, @NotNull Set<Dimension> dimensions, @NotEmpty String movieDuration, ShowsInfo showsInfo) {
         this.movieId = movieId;
         this.dimensions = dimensions;
         this.movieDuration = movieDuration;
-        this.noOfShows = noOfShows;
+        this.showsInfo = showsInfo;
     }
 
     public String getMovieId() {
@@ -41,19 +43,20 @@ public class MovieRequest {
         this.movieDuration = movieDuration;
     }
 
-    public void setNoOfShows(Integer noOfShows) {
-        this.noOfShows = noOfShows;
-    }
-
     public String getMovieDuration() {
         return movieDuration;
-    }
-
-    public Integer getNoOfShows() {
-        return noOfShows;
     }
 
     public void setDimensions(Set<Dimension> dimensions) {
         this.dimensions = dimensions;
     }
+
+    public ShowsInfo getShowsInfo() {
+        return showsInfo;
+    }
+
+    public void setShowsInfo(ShowsInfo showsInfo) {
+        this.showsInfo = showsInfo;
+    }
+
 }

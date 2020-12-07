@@ -1,7 +1,7 @@
 package com.capgemini.TheaterService.services;
 
 import com.capgemini.TheaterService.beans.ShortMovie;
-import com.capgemini.TheaterService.dto.NumberOfShows;
+import com.capgemini.TheaterService.dto.ShowsInfo;
 import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.exceptions.*;
@@ -24,7 +24,7 @@ public interface TheaterService {
 
     Theater updateTheater(String id, Theater theater) throws TheaterNotFoundException, InvalidOperationException;
 
-    Theater addMovieInTheater(String theaterId, String movieId, NumberOfShows shows) throws TheaterNotFoundException, MicroserviceException;
+    Theater addMovieInTheater(String theaterId, String movieId, ShowsInfo showsInfo) throws TheaterNotFoundException, MicroserviceException;
 
     void removeMovieFromTheater(String theaterId, String movieId) throws TheaterNotFoundException, MicroserviceException;
 

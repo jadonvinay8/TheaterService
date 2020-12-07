@@ -5,7 +5,7 @@ import com.capgemini.TheaterService.beans.MovieRequest;
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.dao.TheaterDAO;
 import com.capgemini.TheaterService.dto.MicroserviceResponse;
-import com.capgemini.TheaterService.dto.NumberOfShows;
+import com.capgemini.TheaterService.dto.ShowsInfo;
 import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.exceptions.*;
@@ -89,7 +89,7 @@ public class TheaterServiceImpl implements TheaterService {
         var sanitizedTheater = sanitizeTheater(theater);
         validateCity(theater.getCityId()); // if city not valid, throw MicroserviceException
         validateTheaterNamingConstraints(sanitizedTheater); // check for naming constraint
-
+        sanitizedTheater.setMovies(new ArrayList<>());
         return theaterDAO.save(sanitizedTheater);
     }
 
@@ -114,6 +114,7 @@ public class TheaterServiceImpl implements TheaterService {
 
         theatersToBeValidated.forEach(theater -> {
             var sanitizedTheater = sanitizeTheater(theater);
+            sanitizedTheater.setMovies(new ArrayList<>());
             names.add(sanitizedTheater.getTheaterName().toLowerCase());
             cityIds.add(sanitizedTheater.getCityId());
             areas.add(sanitizedTheater.getAddress().getArea().toLowerCase());
@@ -165,8 +166,11 @@ public class TheaterServiceImpl implements TheaterService {
     }
 
     @Override
-    public Theater addMovieInTheater(String theaterId, String movieId, NumberOfShows numberOfShows)
+    public Theater addMovieInTheater(String theaterId, String movieId, ShowsInfo showsInfo)
       throws TheaterNotFoundException, MicroserviceException {
+        if (showsInfo.getEndDate().before(showsInfo.getStartDate())) {
+            throw new InvalidOperationException("End date should be greater than Start Date");
+        }
         var theater = findTheaterById(theaterId);
         var movies = theater.getMovies();
         movies.stream()
@@ -176,12 +180,12 @@ public class TheaterServiceImpl implements TheaterService {
           });
 
         var movie = retrieveMovie(movieId);
-        var movieRequest = new MovieRequest(movieId, Set.of(movie.getMovieDimension()), movie.getDuration(), numberOfShows.getShows());
+        var movieRequest = new MovieRequest(movieId, Set.of(movie.getMovieDimension()), movie.getDuration(), showsInfo);
         var requestUrl = addMovieToScreenUrl.replaceAll("theaterId", theaterId);
         callScreenService(requestUrl, movieRequest, HttpMethod.PUT);
 
         // Add movie to theater if everything goes fine in screen service
-        movies.add(new ShortMovie(movieId, movie.getName()));
+        movies.add(new ShortMovie(movieId, showsInfo.getStartDate(), showsInfo.getEndDate()));
         theater.setMovies(movies);
 
         return updateTheater(theater);

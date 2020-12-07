@@ -11,8 +11,8 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 
-//@Configuration
-//@EnableDynamoDBRepositories(basePackages = "com.capgemini.TheaterService")
+@Configuration
+@EnableDynamoDBRepositories(basePackages = "com.capgemini.TheaterService")
 public class DynamoDBConfig {
 
     @Value("${amazon.dynamodb.endpoint}")
@@ -24,7 +24,7 @@ public class DynamoDBConfig {
     @Value("${amazon.aws.secretkey}")
     private String amazonAWSSecretKey;
 
-    //@Bean
+    @Bean
     public AmazonDynamoDB amazonDynamoDB() {
         AmazonDynamoDB amazonDynamoDB = new AmazonDynamoDBClient(amazonAWSCredentials());
 
@@ -34,7 +34,7 @@ public class DynamoDBConfig {
         return amazonDynamoDB;
     }
 
-    //@Bean
+    @Bean
     public AWSCredentials amazonAWSCredentials() {
         return new BasicAWSCredentials(amazonAWSAccessKey, amazonAWSSecretKey);
     }

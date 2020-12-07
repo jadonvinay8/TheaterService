@@ -5,7 +5,7 @@ import com.capgemini.TheaterService.beans.Dimension;
 import com.capgemini.TheaterService.beans.ShortMovie;
 import com.capgemini.TheaterService.dao.TheaterDAO;
 import com.capgemini.TheaterService.dto.MicroserviceResponse;
-import com.capgemini.TheaterService.dto.NumberOfShows;
+import com.capgemini.TheaterService.dto.ShowsInfo;
 import com.capgemini.TheaterService.entities.Movie;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.exceptions.InvalidOperationException;
@@ -26,6 +26,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 
@@ -149,7 +152,7 @@ public class ServiceLayerTest {
         when(restTemplate.exchange(eq(id), any(HttpMethod.class), any(HttpEntity.class), eq(MicroserviceResponse.class))).thenReturn(ResponseEntity.ok(response));
         when(theaterDAO.save(theater)).thenReturn(theater);
         when(restTemplate.getForEntity(id + id, MicroserviceResponse.class)).thenReturn(ResponseEntity.ok(response));
-        assertEquals(theater, service.addMovieInTheater(id, id, new NumberOfShows(5)));
+        assertEquals(theater, service.addMovieInTheater(id, id, new ShowsInfo(5, Date.from(Instant.now()), Date.from(Instant.now()))));
     }
 
     @Test
@@ -157,7 +160,7 @@ public class ServiceLayerTest {
         String id = "1";
         Theater theater = theaterMap.get(id);
         Movie movie = new Movie("1", "movie", "", "", Dimension._2D, 5.0, "moviePoster", Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
-        theater.setMovies(List.of(new ShortMovie(movie.getMovieId(), movie.getName())));
+        theater.setMovies(List.of(new ShortMovie(movie.getMovieId(), Date.from(Instant.now()), Date.from(Instant.now()))));
         when(theaterDAO.findById(id)).thenReturn(Optional.of(theater));
         MicroserviceResponse response = ResponseBuilder.build(200, movie, null);
         ReflectionTestUtils.setField(service, "removeMovieFromScreenUrl", id);
@@ -181,7 +184,7 @@ public class ServiceLayerTest {
         String id = "1";
         Theater theater = theaterMap.get(id);
         Movie movie = new Movie("1", "movie", "", "", Dimension._2D, 5.0, "moviePoster", Date.from(Instant.now()), new ArrayList<>(), new ArrayList<>());
-        theater.setMovies(List.of(new ShortMovie(movie.getMovieId(), movie.getName())));
+        theater.setMovies(List.of(new ShortMovie(movie.getMovieId(), Date.from(Instant.now()), Date.from(Instant.now()))));
         when(theaterDAO.findById(id)).thenReturn(Optional.of(theater));
         HashMap<String, Set<String>> map = new HashMap<>();
         map.put("1", Set.of("1", "2"));
@@ -200,17 +203,19 @@ public class ServiceLayerTest {
     }
 
     @Test
-    public void testGetMoviesInCity() {
+    public void testGetMoviesInCity() throws ParseException {
         String id = "1";
         List<Theater> theaters = new ArrayList<>();
         theaterMap.forEach((key, value) -> theaters.add(value));
-        ShortMovie movie1 = new ShortMovie("1", "movie");
-        ShortMovie movie2 = new ShortMovie("2", "movie");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = dateFormat.parse("2020-12-07");
+        ShortMovie movie1 = new ShortMovie("1", date, date);
+        ShortMovie movie2 = new ShortMovie("2", date, date);
         theaters.get(0).setMovies(List.of(movie1));
         MicroserviceResponse response = ResponseBuilder.build(200, "success", null);
         when(restTemplate.getForEntity(anyString(), eq(MicroserviceResponse.class))).thenReturn(ResponseEntity.ok(response));
         when(theaterDAO.findByCityId(id)).thenReturn(theaters);
-        assertEquals(Set.of(movie1, movie2), service.getMoviesInCity(id));
+        assertEquals(Set.of(movie2, movie1), service.getMoviesInCity(id));
     }
 
     @Test
@@ -218,7 +223,7 @@ public class ServiceLayerTest {
         String id = "1";
         List<Theater> theaters = new ArrayList<>();
         theaterMap.forEach((key, value) -> theaters.add(value));
-        ShortMovie movie1 = new ShortMovie("1", "movie");
+        ShortMovie movie1 = new ShortMovie("1", Date.from(Instant.now()), Date.from(Instant.now()));
         theaters.get(0).setMovies(List.of(movie1));
         MicroserviceResponse response = ResponseBuilder.build(200, "success", null);
         when(restTemplate.getForEntity(anyString(), eq(MicroserviceResponse.class))).thenReturn(ResponseEntity.ok(response));
@@ -236,7 +241,7 @@ public class ServiceLayerTest {
         String id = "1";
         List<Theater> theaters = new ArrayList<>();
         theaterMap.forEach((key, value) -> theaters.add(value));
-        ShortMovie movie1 = new ShortMovie("1", "movie");
+        ShortMovie movie1 = new ShortMovie("1", Date.from(Instant.now()), Date.from(Instant.now()));
         theaters.get(0).setMovies(List.of(movie1));
         when(theaterDAO.findByCityId(id)).thenReturn(theaters);
         MicroserviceResponse response = ResponseBuilder.build(200, "success", null);
@@ -248,7 +253,7 @@ public class ServiceLayerTest {
     public void testValidateTheaterAndMovie() {
         String id = "1";
         Theater theater = theaterMap.get(id);
-        theater.setMovies(List.of(new ShortMovie("1", "movie")));
+        theater.setMovies(List.of(new ShortMovie("1", Date.from(Instant.now()), Date.from(Instant.now()))));
         when(theaterDAO.findById(id)).thenReturn(Optional.of(theater));
         assertTrue(service.validateTheaterAndMovie(id, id));
     }
@@ -258,7 +263,7 @@ public class ServiceLayerTest {
         String id = "1";
         List<Theater> theaters = new ArrayList<>();
         theaterMap.forEach((key, value) -> theaters.add(value));
-        ShortMovie movie1 = new ShortMovie("1", "movie");
+        ShortMovie movie1 = new ShortMovie("1", Date.from(Instant.now()), Date.from(Instant.now()));
         theaters.get(0).setMovies(List.of(movie1));
         MicroserviceResponse response = ResponseBuilder.build(200, "success", null);
         when(restTemplate.getForEntity(anyString(), eq(MicroserviceResponse.class))).thenReturn(ResponseEntity.ok(response));

@@ -1,7 +1,7 @@
 package com.capgemini.TheaterService.controllers;
 
 import com.capgemini.TheaterService.dto.MicroserviceResponse;
-import com.capgemini.TheaterService.dto.NumberOfShows;
+import com.capgemini.TheaterService.dto.ShowsInfo;
 import com.capgemini.TheaterService.entities.Theater;
 import com.capgemini.TheaterService.services.TheaterService;
 import com.capgemini.TheaterService.utils.CSVConverter;
@@ -111,10 +111,10 @@ public class TheaterController {
     @PostMapping("/{id}/movies/{movieId}")
     public ResponseEntity<MicroserviceResponse> addMovieToTheater(@PathVariable("id") @NotNull String id,
                                                                   @PathVariable("movieId") @NotNull String movieId,
-                                                                  @Valid @RequestBody NumberOfShows numberOfShows) {
+                                                                  @Valid @RequestBody ShowsInfo showsInfo) {
 
         MicroserviceResponse response = ResponseBuilder.build(HttpStatus.CREATED.value(),
-          theaterService.addMovieInTheater(id, movieId, numberOfShows), null);
+          theaterService.addMovieInTheater(id, movieId, showsInfo), null);
         return ResponseEntity.ok(response);
     }
 

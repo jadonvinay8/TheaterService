@@ -52,14 +52,14 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<MicroserviceResponse> invalidInputPayload(MethodArgumentNotValidException e) {
-		ErrorResponse errorResponse = new ErrorResponse("Invalid Payload Supplied, check for nulls/blanks", e.getMessage(), "400");
+		ErrorResponse errorResponse = new ErrorResponse("Invalid Payload Supplied, see if constraints are satisfied properly", e.getMessage(), "400");
 		MicroserviceResponse response = ResponseBuilder.build(HttpStatus.BAD_REQUEST.value(), null, errorResponse);
 		return ResponseEntity.ok(response);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<MicroserviceResponse> invalidInput(ConstraintViolationException e) {
-		ErrorResponse errorResponse = new ErrorResponse("Constraints violated, check for nulls/blanks", e.getMessage(), "400");
+		ErrorResponse errorResponse = new ErrorResponse("Constraints violated, check for nulls/blanks/constraints", e.getMessage(), "400");
 		MicroserviceResponse response = ResponseBuilder.build(HttpStatus.BAD_REQUEST.value(), null, errorResponse);
 		return ResponseEntity.ok(response);
 	}

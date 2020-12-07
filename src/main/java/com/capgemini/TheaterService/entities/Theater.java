@@ -20,7 +20,6 @@ public class Theater {
     private String theaterId;
     private String cityId;
 
-    @NotNull
     @NotBlank
     private String theaterName;
 
