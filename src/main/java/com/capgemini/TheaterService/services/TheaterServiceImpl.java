@@ -120,15 +120,16 @@ public class TheaterServiceImpl implements TheaterService {
             areas.add(sanitizedTheater.getAddress().getArea().toLowerCase());
         });
 
-        return getAllTheaters().stream()
+        getAllTheaters().stream()
           .filter(theater -> names.contains(theater.getTheaterName().toLowerCase()))
           .filter(theater -> cityIds.contains(theater.getCityId()))
           .filter(theater -> areas.contains(theater.getAddress().getArea().toLowerCase()))
-          .peek(theater -> {
+          .forEach(theater -> {
               throw new TheaterNameValidationFailedException("Theater with name" + theater.getTheaterName()
                 + " is already present in same area");
-          })
-          .collect(Collectors.toList());
+          });
+
+          return theatersToBeValidated;
     }
 
     private Theater sanitizeTheater(Theater theater) {
